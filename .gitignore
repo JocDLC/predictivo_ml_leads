@@ -15,8 +15,7 @@ env/
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 
-# Data files (too large for git)
-data/raw/*.csv
+# Data files (processed files excluded, raw files tracked for reproducibility)
 data/processed/*.csv
 
 # Trained models
