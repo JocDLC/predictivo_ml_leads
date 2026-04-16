@@ -66,6 +66,9 @@ al momento de predecir un lead nuevo:
 | `Primera fecha de acción` | Timestamp de cuando se actuó sobre el lead. |
 | `Qualified lead reassignment user` | Usuario que reasignó, dato posterior. |
 | `Numero de matricula` | Solo se completa para leads HOT (derivados). Es data leakage directa: si tiene valor → siempre es target=1. |
+| `Propietario del candidato` | Se asigna/modifica durante el proceso de gestión, no al ingreso. Podría correlacionar con el resultado. |
+| `Último alias modificado` | Usuario interno que modificó el lead durante el proceso, no disponible al ingreso. |
+| `Tiempo procesado hasta primer contacto` | Ocurre DESPUÉS del ingreso. Útil para análisis exploratorio y modelo secundario, pero no para predecir al ingreso. |
 
 ### PASO 5 — Eliminar columnas sin valor predictivo
 | Columna | Razón de eliminación |
@@ -101,17 +104,7 @@ al momento de predecir un lead nuevo:
 | `Origen` | 1,174 (9%) | Imputar como "desconocido" |
 | `vehículo de interés` | 23 (0.2%) | Imputar con la moda |
 | `Nombre corto de la Concesión` | 28 (0.2%) | Imputar como "desconocido" |
-| `Tiempo procesado hasta primer contacto` | 4,062 (30%) | Evaluar: puede ser data leakage parcial. Si se mantiene, imputar con mediana. |
-
-### PASO 9 — Evaluar "Tiempo procesado hasta primer contacto"
-- **Decisión pendiente:** Esta columna mide cuánto tiempo tardó el equipo en hacer
-  el primer contacto con el lead. Podría ser útil (leads contactados rápido convierten más)
-  pero también podría tener data leakage parcial (30% nulos = leads que nunca fueron
-  contactados, que probablemente son los del bot eliminados en PASO 2).
-- **Acción:** Después de eliminar los leads del bot (PASO 2), revisar cuántos nulos quedan.
-  Si quedan pocos, imputar con mediana. Si quedan muchos, considerar eliminar.
-
-### PASO 10 — Columnas finales para el modelo
+### PASO 9 — Columnas finales para el modelo
 Después de la limpieza, las features candidatas son:
 
 **Features temporales (ya pre-procesadas en el dataset original):**
@@ -131,16 +124,13 @@ detectar patrones temporales de conversión. Cada componente aporta información
 | `dia_semana_creacion` | cat | Día de la semana |
 | `nombre_formulario` | cat | Tipo de formulario (17 valores) |
 | `campaña` | cat | Campaña de marketing (24 valores + "sin_campana") |
-| `ultimo_alias` | cat | Alias del último usuario que modificó (14 valores) |
-| `propietario_candidato` | cat | Estado/propietario del lead (10 valores) |
 | `plataforma` | cat | Chatbot vs Manual (2 valores) |
 | `origen_creacion` | cat | ONE/Facebook/WhatsApp/RRSS (4 valores) |
 | `subtipo_interes` | cat | Tipo de solicitud (5 valores) |
 | `vehiculo_interes` | cat | Modelo del auto (16 valores) |
 | `concesion` | cat | Nombre del concesionario (92 valores) |
 | `origen` | cat | Canal de marketing (15 valores) |
-| `tiempo_primer_contacto` | float | Minutos hasta primer contacto (evaluar) |
-| **`target`** | **int** | **1=Contacto interesado, 0=Rechazo** |
+| **`target`** | **int** | **1=Hot Lead (Contacto interesado), 0=Rechazo** |
 
 ---
 
@@ -149,6 +139,6 @@ detectar patrones temporales de conversión. Cada componente aporta información
 | Métrica | Antes | Después |
 |---|---|---|
 | Filas | 13,516 | ~9,010 |
-| Columnas | 28 | ~16-17 |
-| Columnas eliminadas | — | 12 (leakage + PII + constantes + IDs) |
-| Target balance | — | ~67% positivo / 33% negativo |
+| Columnas | 27 (sin email) | 14 (13 features + target) |
+| Columnas eliminadas | — | 14 (leakage + PII + constantes + IDs + post-ingreso) |
+| Target balance | — | ~67% Hot Lead / 33% Rechazo |
