@@ -1,0 +1,38 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Data files (too large for git)
+data/raw/*.csv
+data/processed/*.csv
+
+# Trained models
+models/trained/*.pkl
+models/trained/*.joblib
+
+# MLflow
+mlruns/
+mlflow.db
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Temporary files
+*.tmp
+*.pdf
+dataset_analysis.txt
+prueba.py
