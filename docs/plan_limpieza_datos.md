@@ -107,7 +107,7 @@ Nulos medidos DESPUÉS de filtrar leads del bot (9,010 filas):
 |---|---|---|---|
 | `campana` | 4,588 | 50.9% | Imputar como "sin_campana" (lead orgánico, sin campaña paga) |
 | `origen` | 887 | 9.8% | Imputar como "desconocido" |
-| `vehiculo_interes` | 20 | 0.2% | Imputar con la moda ("KWID"). Nulo = persona indecisa o formulario no lo exigía como obligatorio |
+| `vehiculo_interes` | 20 | 0.2% | Imputar como "sin_vehiculo" (no moda, para no inflar números). 19 de 20 son Cold (esperado). Regla de negocio: los Hot Leads no deberían tener vehículo vacío porque el analista lo pregunta en la llamada; los Cold sí pueden tenerlo vacío. |
 | `concesion` | 5 | 0.1% | Imputar como "sin_concesion" |
 
 ### PASO 9 — Eliminar filas duplicadas
