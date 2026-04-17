@@ -107,7 +107,7 @@ Nulos medidos DESPUÉS de filtrar leads del bot (9,010 filas):
 |---|---|---|---|
 | `campana` | 4,588 | 50.9% | Imputar como "sin_campana" (lead orgánico, sin campaña paga) |
 | `origen` | 887 | 9.8% | Imputar como "desconocido" |
-| `vehiculo_interes` | 20 | 0.2% | Imputar con la moda ("KWID") |
+| `vehiculo_interes` | 20 | 0.2% | Imputar con la moda ("KWID"). Nulo = persona indecisa o formulario no lo exigía como obligatorio |
 | `concesion` | 5 | 0.1% | Imputar como "sin_concesion" |
 
 ### PASO 9 — Eliminar filas duplicadas
