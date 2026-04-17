@@ -40,8 +40,10 @@ equipo de Sales & Marketing, se los filtra con un checklist, y los calificados c
 ### PASO 2 — Eliminar leads del bot (Cualificación en blanco)
 - **Qué:** Eliminar todas las filas donde `Cualificación` es NaN (4,506 filas).
 - **Por qué:** Son leads manejados exclusivamente por el bot (plataforma
-  "MX_LEAD_CHATBOT_QUALIF" o "MX_LEAD_QUALIF") que nunca pasaron por el equipo
-  humano de Sales & Marketing. No representan el proceso que queremos predecir.
+  `MX_LEAD_CHATBOT_QUALIF`) que nunca pasaron por el equipo humano de Sales &
+  Marketing. La plataforma `MX_LEAD_QUALIF` corresponde a leads que completaron
+  el formulario y sí fueron gestionados por el equipo humano.
+  Los leads del bot no representan el proceso que queremos predecir.
 - **Registros eliminados:** 4,506 filas.
 - **Registros restantes:** 9,010 filas.
 
