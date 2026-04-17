@@ -162,7 +162,7 @@ componentes individuales para facilitar el análisis de patrones temporales:
 | Target | Cantidad | % |
 |---|---|---|
 | 1 — Hot Lead (Contacto interesado) | 5,782 | 68.7% |
-| 0 — No Hot (Rechazo arg. + no arg.) | 2,640 | 31.3% |
+| 0 — Cold Lead (Rechazo arg. + no arg.) | 2,640 | 31.3% |
 
 ---
 
