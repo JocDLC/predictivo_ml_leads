@@ -2,7 +2,7 @@
 
 ## Dataset Original
 - **Archivo:** `data/raw/leads_raw.csv`
-- **Registros:** 13,516 filas × 28 columnas
+- **Registros:** 13,516 filas × 27 columnas (la columna email fue removida previamente por PII)
 - **Encoding:** latin-1, separador: `;`
 
 ---
@@ -42,15 +42,16 @@ equipo de Sales & Marketing, se los filtra con un checklist, y los calificados c
 - **Por qué:** Son leads manejados exclusivamente por el bot (plataforma
   "MX_LEAD_CHATBOT_QUALIF" o "MX_LEAD_QUALIF") que nunca pasaron por el equipo
   humano de Sales & Marketing. No representan el proceso que queremos predecir.
-- **Registros restantes esperados:** ~9,010 filas.
+- **Registros eliminados:** 4,506 filas.
+- **Registros restantes:** 9,010 filas.
 
 ### PASO 3 — Crear variable target binaria
 - **Qué:** Crear columna `target` → 1 si "Contacto interesado", 0 si cualquier "Rechazo".
 - **Por qué:** Nuestro objetivo es predecir si un lead será derivado al concesionario.
   Es una clasificación binaria.
-- **Distribución esperada:**
-  - 1 (Contacto interesado): 6,058 → ~67%
-  - 0 (Rechazo argumentado + no argumentado): 2,952 → ~33%
+- **Distribución resultante (antes de eliminar duplicados):**
+  - 1 (Contacto interesado): 6,058 → 67.2%
+  - 0 (Rechazo argumentado + no argumentado): 2,952 → 32.8%
 
 ### PASO 4 — Eliminar columnas con data leakage
 Columnas que se completan DESPUÉS de la cualificación y que no estarían disponibles
@@ -98,13 +99,23 @@ al momento de predecir un lead nuevo:
   "sin_campana".
 
 ### PASO 8 — Manejo de nulos en features restantes
-| Columna | Nulos | Estrategia |
-|---|---|---|
-| `Campaña` | 6,142 (45%) | Imputar como "sin_campana" |
-| `Origen` | 1,174 (9%) | Imputar como "desconocido" |
-| `vehículo de interés` | 23 (0.2%) | Imputar con la moda |
-| `Nombre corto de la Concesión` | 28 (0.2%) | Imputar como "desconocido" |
-### PASO 9 — Columnas finales para el modelo
+Nulos medidos DESPUÉS de filtrar leads del bot (9,010 filas):
+
+| Columna | Nulos | % | Estrategia |
+|---|---|---|---|
+| `campana` | 4,588 | 50.9% | Imputar como "sin_campana" (lead orgánico, sin campaña paga) |
+| `origen` | 887 | 9.8% | Imputar como "desconocido" |
+| `vehiculo_interes` | 20 | 0.2% | Imputar con la moda ("KWID") |
+| `concesion` | 5 | 0.1% | Imputar como "sin_concesion" |
+
+### PASO 9 — Eliminar filas duplicadas
+- **Qué:** Identificar y eliminar filas exactamente iguales en todas las columnas.
+- **Duplicados encontrados:** 588 filas.
+- **Por qué:** Son registros repetidos que sesgarían al modelo (le daría más peso a esos
+  leads). Pueden haberse generado por re-envíos del formulario o duplicaciones del CRM.
+- **Registros restantes:** 8,422 filas.
+
+### PASO 10 — Columnas finales para el modelo
 Después de la limpieza, las features candidatas son:
 
 **Features temporales (ya pre-procesadas en el dataset original):**
@@ -117,13 +128,13 @@ detectar patrones temporales de conversión. Cada componente aporta información
 
 | Columna | Tipo | Descripción |
 |---|---|---|
-| `año_creacion` | int | Año en que se creó el lead |
+| `anio_creacion` | int | Año en que se creó el lead |
 | `mes_creacion` | int | Mes de creación |
 | `dia_creacion` | int | Día del mes |
 | `hora_creacion` | int | Hora del día (0-23) |
 | `dia_semana_creacion` | cat | Día de la semana |
 | `nombre_formulario` | cat | Tipo de formulario (17 valores) |
-| `campaña` | cat | Campaña de marketing (24 valores + "sin_campana") |
+| `campana` | cat | Campaña de marketing (24 valores + "sin_campana") |
 | `plataforma` | cat | Chatbot vs Manual (2 valores) |
 | `origen_creacion` | cat | ONE/Facebook/WhatsApp/RRSS (4 valores) |
 | `subtipo_interes` | cat | Tipo de solicitud (5 valores) |
@@ -134,11 +145,28 @@ detectar patrones temporales de conversión. Cada componente aporta información
 
 ---
 
-## Resumen de Impacto
+## Resumen de Impacto (Resultados Reales)
 
-| Métrica | Antes | Después |
+| Métrica | Raw | Limpio |
 |---|---|---|
-| Filas | 13,516 | ~9,010 |
-| Columnas | 27 (sin email) | 14 (13 features + target) |
-| Columnas eliminadas | — | 14 (leakage + PII + constantes + IDs + post-ingreso) |
-| Target balance | — | ~67% Hot Lead / 33% Rechazo |
+| Filas | 13,516 | **8,422** |
+| Columnas | 27 | **14** (13 features + target) |
+| Valores nulos totales | 83,107 | **0** |
+| Filas eliminadas (bot) | — | 4,506 |
+| Filas eliminadas (duplicados) | — | 588 |
+| Columnas eliminadas | — | 13 (leakage + constantes + IDs) |
+
+| Target | Cantidad | % |
+|---|---|---|
+| 1 — Hot Lead (Contacto interesado) | 5,782 | 68.7% |
+| 0 — No Hot (Rechazo arg. + no arg.) | 2,640 | 31.3% |
+
+---
+
+## Archivos Generados
+
+| Archivo | Descripción |
+|---|---|
+| `data/raw/leads_raw.csv` | Dataset original (sin email), encoding latin-1 |
+| `data/processed/leads_cleaned.csv` | Dataset limpio, encoding UTF-8, 0 nulos |
+| `notebooks/00_data_engineering.ipynb` | Notebook con todo el proceso documentado y ejecutado |
