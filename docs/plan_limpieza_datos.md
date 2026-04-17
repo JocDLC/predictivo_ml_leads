@@ -118,9 +118,10 @@ Nulos medidos DESPUÉS de filtrar leads del bot (9,010 filas):
 ### PASO 10 — Columnas finales para el modelo
 Después de la limpieza, las features candidatas son:
 
-**Features temporales (ya pre-procesadas en el dataset original):**
-La fecha de registro del lead fue descompuesta en componentes individuales para
-detectar patrones temporales de conversión. Cada componente aporta información distinta:
+**Features temporales (pre-procesadas antes del export del CRM):**
+El dataset original en Salesforce contenía una columna `Fecha de creación` (datetime
+con fecha y hora). Antes de exportar el CSV, esta columna fue descompuesta en 5
+componentes individuales para facilitar el análisis de patrones temporales:
 - **Hora** → ¿Los leads de madrugada convierten menos que los de horario laboral?
 - **Día de semana** → ¿Los leads de fin de semana son más o menos serios?
 - **Mes** → Estacionalidad (diciembre vs enero pueden tener comportamientos distintos)
