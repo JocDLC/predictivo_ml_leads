@@ -166,10 +166,130 @@ componentes individuales para facilitar el análisis de patrones temporales:
 
 ---
 
+## Transformaciones de Feature Engineering (post-EDA)
+
+> **Nota:** Los pasos 11 a 18 no son arbitrarios. Cada decisión se tomó a partir de los
+> descubrimientos del Análisis Exploratorio de Datos (EDA) documentado en
+> `01_exploratory_data_analysis(EDA).ipynb`. El EDA analizó distribuciones, tasas de
+> conversión por categoría, correlaciones (Pearson y Cramér's V), heatmaps temporales
+> y detección de categorías de baja frecuencia. Las justificaciones de cada paso
+> referencian los hallazgos específicos que los motivaron.
+
+Transformaciones aplicadas en `02_feature_engineering.ipynb`:
+
+### PASO 11 — Eliminar `anio_creacion`
+- **Qué:** Eliminar la columna `anio_creacion` del dataset.
+- **Por qué:** El dataset solo contiene datos de **diciembre 2025** (6,358 leads) y
+  **enero 2026** (2,064 leads). Con solo 2 valores posibles (2025 y 2026), la feature
+  no aporta variabilidad suficiente para que el modelo aprenda patrones generalizables.
+  Además, está altamente correlacionada con `mes_creacion` (r = -0.996), lo cual genera
+  redundancia. Si en el futuro se agregan más datos con mayor rango temporal, se podría
+  reconsiderar.
+
+### PASO 12 — Eliminar `subtipo_interes`
+- **Qué:** Eliminar la columna `subtipo_interes` del dataset.
+- **Por qué:** El 96.5% de los registros tienen el valor "Solicitud de compra". Las otras
+  categorías son: "Solicitud general" (208), "TestDrive Request" (76),
+  "Solicitud de estimación" (6) y "Reveal" (3). Una feature donde un solo valor domina
+  tan abrumadoramente no le da al modelo información útil para discriminar entre Hot y Cold.
+  Su Cramér's V con el target es muy bajo, confirmando la falta de asociación estadística.
+
+### PASO 13 — Crear feature `es_fin_de_semana`
+- **Qué:** Nueva columna binaria: 1 si el lead se creó en sábado o domingo, 0 si fue día laboral.
+- **Por qué:** El EDA mostró que los leads de fin de semana tienen mayor tasa de conversión
+  (sábado 69.9%, domingo 75.1%) vs días laborales (promedio ~65%). La hipótesis es que las
+  personas que buscan un auto en fin de semana tienen más tiempo libre y una intención de
+  compra más seria. Esta feature simplifica la señal de `dia_semana_creacion` en una variable
+  fácil de interpretar para el modelo.
+
+### PASO 14 — Crear feature `franja_horaria`
+- **Qué:** Nueva columna categórica que agrupa `hora_creacion` en 4 franjas:
+  - `madrugada` (00:00 - 05:59)
+  - `manana` (06:00 - 11:59)
+  - `tarde` (12:00 - 17:59)
+  - `noche` (18:00 - 23:59)
+- **Por qué:** El EDA reveló que la madrugada tiene la mayor tasa de conversión (~73-77%),
+  mientras que el horario laboral convierte menos (~63-65%). Quien llena un formulario de
+  madrugada probablemente tiene un interés más genuino. Agrupar en franjas reduce la
+  granularidad de 24 horas a 4 categorías, capturando el patrón sin agregar ruido.
+
+### PASO 15 — Agrupar categorías de baja frecuencia en "otros"
+- **Qué:** Para las features `nombre_formulario`, `vehiculo_interes`, `origen`, `campana`
+  y `concesion`, se agrupan en "otros" todas las categorías con menos del 1% del total
+  de registros (< 84 leads).
+- **Por qué:** Las categorías con muy pocos registros generan problemas:
+  1. El modelo no tiene suficientes ejemplos para aprender patrones confiables.
+  2. Con one-hot encoding, crean columnas casi vacías que consumen dimensionalidad sin aportar.
+  3. Pueden causar sobreajuste: el modelo memoriza esos pocos casos en vez de generalizar.
+  Agruparlas en "otros" reduce el ruido y la dimensionalidad.
+
+### PASO 16 — Target encoding para `concesion`
+- **Qué:** Reemplazar cada concesionario por su **tasa de conversión promedio** calculada
+  solo con datos de entrenamiento (para evitar data leakage).
+- **Por qué:** Aún después de agrupar categorías de baja frecuencia, `concesion` tiene
+  alta cardinalidad. Con one-hot encoding generaría demasiadas columnas sparse. El target
+  encoding resume la información de cada concesionario en un solo número (su probabilidad
+  histórica de producir un Hot Lead). Los concesionarios no vistos en entrenamiento reciben
+  la media global como fallback.
+- **Resultado:** `concesion` → `concesion_target_enc` (float entre 0 y 1).
+
+### PASO 17 — One-hot encoding para el resto de categóricas
+- **Qué:** Aplicar one-hot encoding (con `drop_first=True`) a:
+  `dia_semana_creacion`, `nombre_formulario`, `campana`, `plataforma`,
+  `origen_creacion`, `vehiculo_interes`, `origen`, `franja_horaria`.
+- **Por qué:** Son features categóricas nominales (sin orden natural). One-hot encoding
+  es la forma estándar de representarlas numéricamente para modelos de machine learning.
+  Se usa `drop_first=True` para evitar multicolinealidad perfecta (la categoría eliminada
+  queda implícita cuando todas las demás son 0).
+- **Resultado:** 8 columnas categóricas → 44 columnas binarias (0/1).
+
+### PASO 18 — Split train/test estratificado
+- **Qué:** Dividir el dataset en 80% entrenamiento y 20% test, estratificando por `target`.
+- **Por qué:** La estratificación garantiza que ambos conjuntos mantengan la misma proporción
+  de Hot/Cold (~68.7%/31.3%). Sin esto, podríamos tener por azar un test set con proporción
+  diferente, lo que sesgaría la evaluación del modelo.
+- **Resultado:**
+  - Train: 6,737 filas (68.7% Hot)
+  - Test: 1,685 filas (68.7% Hot)
+- **Random state:** 42 (fijo para reproducibilidad).
+
+---
+
+## Dataset Final para Modelado
+
+| Métrica | Valor |
+|---|---|
+| Features totales | **49** (5 numéricas + 44 dummies) |
+| Filas train | 6,737 |
+| Filas test | 1,685 |
+| Nulos | 0 |
+
+### Features numéricas (5):
+| Feature | Origen | Descripción |
+|---|---|---|
+| `mes_creacion` | Original | Mes de creación (1, 12) |
+| `dia_creacion` | Original | Día del mes (1-31) |
+| `hora_creacion` | Original | Hora del día (0-23) |
+| `es_fin_de_semana` | **Nueva** | 1=sábado/domingo, 0=laboral |
+| `concesion_target_enc` | **Transformada** | Tasa de conversión del concesionario |
+
+### Features dummy (44):
+Generadas por one-hot encoding de: `dia_semana_creacion` (6), `nombre_formulario` (8),
+`campana` (8), `plataforma` (1), `origen_creacion` (2), `vehiculo_interes` (8),
+`origen` (7), `franja_horaria` (3).
+
+---
+
 ## Archivos Generados
 
 | Archivo | Descripción |
 |---|---|
 | `data/raw/leads_raw.csv` | Dataset original (sin email), encoding latin-1 |
 | `data/processed/leads_cleaned.csv` | Dataset limpio, encoding UTF-8, 0 nulos |
-| `notebooks/00_data_engineering.ipynb` | Notebook con todo el proceso documentado y ejecutado |
+| `data/processed/X_train.csv` | Features de entrenamiento (6,737 × 49) |
+| `data/processed/X_test.csv` | Features de test (1,685 × 49) |
+| `data/processed/y_train.csv` | Target de entrenamiento |
+| `data/processed/y_test.csv` | Target de test |
+| `notebooks/00_data_engineering.ipynb` | Notebook de limpieza de datos |
+| `notebooks/01_exploratory_data_analysis(EDA).ipynb` | Notebook de análisis exploratorio |
+| `notebooks/02_feature_engineering.ipynb` | Notebook de feature engineering |
