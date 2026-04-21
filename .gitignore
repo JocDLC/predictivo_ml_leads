@@ -35,3 +35,9 @@ Thumbs.db
 *.pdf
 dataset_analysis.txt
 prueba.py
+
+# Excel files from Salesforce (too large for git)
+*.xlsx
+
+# Preprocessing artifacts (binary, regenerable with src/save_artifacts.py)
+models/preprocessing_config.joblib
