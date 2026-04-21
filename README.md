@@ -4,9 +4,9 @@ Proyecto final de Machine Learning e IA. Sistema predictivo de clasificación bi
 
 ## Contexto del Negocio
 
-Una agencia en México realiza campañas de marketing digital para que personas interesadas en vehículos completen un formulario. Estos leads son contactados por un equipo de Sales & Marketing que los filtra. Los leads calificados como "interesados" se derivan al concesionarioario para cerrar la venta.
+Una agencia en México realiza campañas de marketing digital para que personas interesadas en vehículos completen un formulario. Estos leads son contactados por un equipo de Sales & Marketing que los filtra. Los leads calificados como "interesados" se derivan al concesionario para cerrar la venta.
 
-**Objetivo:** Predecir si un lead será calificado como "Contacto interesado" (derivado al concesionarioario) o será rechazado, optimizando la priorización del equipo de ventas.
+**Objetivo:** Predecir si un lead será calificado como "Contacto interesado" (derivado al concesionario) o será rechazado, optimizando la priorización del equipo de ventas.
 
 ---
 
