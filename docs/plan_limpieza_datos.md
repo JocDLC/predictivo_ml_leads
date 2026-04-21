@@ -12,10 +12,10 @@
 Una agencia en México realiza campañas digitales para Renault. Las personas completan
 formularios solicitando información sobre vehículos. Estos leads son contactados por el
 equipo de Sales & Marketing, se los filtra con un checklist, y los calificados como
-"Contacto interesado" se derivan al concesionario para cerrar la venta.
+"Contacto interesado" se derivan al concesionarioario para cerrar la venta.
 
 ### Significado de las Cualificaciones:
-- **Contacto interesado:** Lead verificado con checklist y enviado al concesionario.
+- **Contacto interesado:** Lead verificado con checklist y enviado al concesionarioario.
   Estos son por los que cada país paga. **TARGET POSITIVO (1).**
 - **Rechazo argumentado:** Se contactó al lead y este indicó que no estaba interesado.
   El motivo se detalla en "Sub-Cualificación".
@@ -49,7 +49,7 @@ equipo de Sales & Marketing, se los filtra con un checklist, y los calificados c
 
 ### PASO 3 — Crear variable target binaria
 - **Qué:** Crear columna `target` → 1 si "Contacto interesado", 0 si cualquier "Rechazo".
-- **Por qué:** Nuestro objetivo es predecir si un lead será derivado al concesionario.
+- **Por qué:** Nuestro objetivo es predecir si un lead será derivado al concesionarioario.
   Es una clasificación binaria.
 - **Distribución resultante (antes de eliminar duplicados):**
   - 1 (Contacto interesado): 6,058 → 67.2%
@@ -83,14 +83,14 @@ al momento de predecir un lead nuevo:
 
 ### PASO 6 — Evaluar columna "Nombre corto de la Concesión"
 - **Qué:** Mantener esta columna como feature.
-- **Por qué:** Tiene 92 concesionarios distintos. Puede revelar patrones geográficos
-  de conversión (ej: ciertos concesionarios convierten más que otros). Se le hará
+- **Por qué:** Tiene 92 concesionarioarios distintos. Puede revelar patrones geográficos
+  de conversión (ej: ciertos concesionarioarios convierten más que otros). Se le hará
   encoding en la fase de Feature Engineering.
 - **Contexto de negocio:** Cuando la persona completa el formulario, el sistema le
-  sugiere el concesionario más cercano. Sin embargo, la persona puede no seleccionar
+  sugiere el concesionarioario más cercano. Sin embargo, la persona puede no seleccionar
   ninguno, por lo que el campo queda vacío.
-- **Nulos:** Solo 28 (0.2%). Se imputan como "sin_concesion". Nota: un lead que no
-  eligió concesionario podría estar menos comprometido, por lo que el nulo en sí
+- **Nulos:** Solo 28 (0.2%). Se imputan como "sin_concesionario". Nota: un lead que no
+  eligió concesionarioario podría estar menos comprometido, por lo que el nulo en sí
   mismo es una señal predictiva.
 
 ### PASO 7 — Evaluar columna "Campaña"
@@ -108,7 +108,7 @@ Nulos medidos DESPUÉS de filtrar leads del bot (9,010 filas):
 | `campana` | 4,588 | 50.9% | Imputar como "sin_campana" (lead orgánico, sin campaña paga) |
 | `origen` | 887 | 9.8% | Imputar como "desconocido" |
 | `vehiculo_interes` | 20 | 0.2% | Imputación diferenciada: **Hot Leads** (1 caso) → moda, porque el analista debió completarlo (error humano). **Cold Leads** (19 casos) → "sin_vehiculo", persona indecisa o formulario no obligatorio. |
-| `concesion` | 5 | 0.1% | Imputar como "sin_concesion" |
+| `concesionario` | 5 | 0.1% | Imputar como "sin_concesionario" |
 
 ### PASO 9 — Eliminar filas duplicadas
 - **Qué:** Identificar y eliminar filas exactamente iguales en todas las columnas.
@@ -142,7 +142,7 @@ componentes individuales para facilitar el análisis de patrones temporales:
 | `origen_creacion` | cat | ONE/Facebook/WhatsApp/RRSS (4 valores) |
 | `subtipo_interes` | cat | Tipo de solicitud (5 valores) |
 | `vehiculo_interes` | cat | Modelo del auto (16 valores) |
-| `concesion` | cat | Nombre del concesionario (92 valores) |
+| `concesionario` | cat | Nombre del concesionarioario (92 valores) |
 | `origen` | cat | Canal de marketing (15 valores) |
 | **`target`** | **int** | **1=Hot Lead (Contacto interesado), 0=Rechazo** |
 
@@ -215,7 +215,7 @@ Transformaciones aplicadas en `02_feature_engineering.ipynb`:
 
 ### PASO 15 — Agrupar categorías de baja frecuencia en "otros"
 - **Qué:** Para las features `nombre_formulario`, `vehiculo_interes`, `origen`, `campana`
-  y `concesion`, se agrupan en "otros" todas las categorías con menos del 1% del total
+  y `concesionario`, se agrupan en "otros" todas las categorías con menos del 1% del total
   de registros (< 84 leads).
 - **Por qué:** Las categorías con muy pocos registros generan problemas:
   1. El modelo no tiene suficientes ejemplos para aprender patrones confiables.
@@ -223,15 +223,15 @@ Transformaciones aplicadas en `02_feature_engineering.ipynb`:
   3. Pueden causar sobreajuste: el modelo memoriza esos pocos casos en vez de generalizar.
   Agruparlas en "otros" reduce el ruido y la dimensionalidad.
 
-### PASO 16 — Target encoding para `concesion`
-- **Qué:** Reemplazar cada concesionario por su **tasa de conversión promedio** calculada
+### PASO 16 — Target encoding para `concesionario`
+- **Qué:** Reemplazar cada concesionarioario por su **tasa de conversión promedio** calculada
   solo con datos de entrenamiento (para evitar data leakage).
-- **Por qué:** Aún después de agrupar categorías de baja frecuencia, `concesion` tiene
+- **Por qué:** Aún después de agrupar categorías de baja frecuencia, `concesionario` tiene
   alta cardinalidad. Con one-hot encoding generaría demasiadas columnas sparse. El target
-  encoding resume la información de cada concesionario en un solo número (su probabilidad
-  histórica de producir un Hot Lead). Los concesionarios no vistos en entrenamiento reciben
+  encoding resume la información de cada concesionarioario en un solo número (su probabilidad
+  histórica de producir un Hot Lead). Los concesionarioarios no vistos en entrenamiento reciben
   la media global como fallback.
-- **Resultado:** `concesion` → `concesion_target_enc` (float entre 0 y 1).
+- **Resultado:** `concesionario` → `concesionarioario_target_enc` (float entre 0 y 1).
 
 ### PASO 17 — One-hot encoding para el resto de categóricas
 - **Qué:** Aplicar one-hot encoding (con `drop_first=True`) a:
@@ -271,7 +271,7 @@ Transformaciones aplicadas en `02_feature_engineering.ipynb`:
 | `dia_creacion` | Original | Día del mes (1-31) |
 | `hora_creacion` | Original | Hora del día (0-23) |
 | `es_fin_de_semana` | **Nueva** | 1=sábado/domingo, 0=laboral |
-| `concesion_target_enc` | **Transformada** | Tasa de conversión del concesionario |
+| `concesionarioario_target_enc` | **Transformada** | Tasa de conversión del concesionarioario |
 
 ### Features dummy (44):
 Generadas por one-hot encoding de: `dia_semana_creacion` (6), `nombre_formulario` (8),
