@@ -38,6 +38,8 @@ prueba.py
 
 # Excel files from Salesforce (too large for git)
 *.xlsx
+# Exception: test sample files for demo/validation
+!data/test/*.xlsx
 
 # Preprocessing artifacts (binary, regenerable with src/save_artifacts.py)
 models/preprocessing_config.joblib
