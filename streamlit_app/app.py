@@ -20,17 +20,44 @@ st.set_page_config(
     page_icon="🎯",
     layout="wide",
     initial_sidebar_state="expanded",
+    menu_items={
+        "Get help": None,
+        "Report a Bug": None,
+        "About": "Predictivo ML Leads v1.0 — Clasificación de Hot/Cold Leads para Renault México.",
+    },
 )
 
 # ─────────────────────────── Sidebar ───────────────────────────
 
 with st.sidebar:
-    st.image("https://upload.wikimedia.org/wikipedia/commons/4/49/Renault_2021_Text.svg", width=150)
-    st.markdown("# Predictivo ML Leads")
+    st.markdown("## 🎯 Predictivo ML Leads")
+    st.markdown("---")
+
+    umbral = st.slider(
+        "Umbral de decisión",
+        min_value=0.10,
+        max_value=0.90,
+        value=0.35,
+        step=0.05,
+        help="Si la probabilidad Hot supera este umbral, el lead se clasifica como Hot.",
+    )
+
+    with st.expander("ℹ️ ¿Qué es el umbral?"):
+        st.markdown(
+            "El **umbral** define el punto de corte para clasificar un lead como Hot o Cold.\n\n"
+            "- **Bajar el umbral** (ej. 0.20): Más leads se clasifican como Hot. "
+            "Se capturan más oportunidades reales pero también se envían más leads fríos "
+            "a los concesionarios (mayor Recall, menor Precision).\n\n"
+            "- **Subir el umbral** (ej. 0.60): Solo los leads con alta confianza se marcan como Hot. "
+            "Se envían menos leads fríos pero se pierden más oportunidades reales "
+            "(menor Recall, mayor Precision).\n\n"
+            "- **Valor recomendado: 0.35** — Optimizado para no perder Hot Leads, "
+            "ya que en el negocio es peor perder una venta que atender un lead frío."
+        )
+
     st.markdown("---")
     st.markdown(
         "**Modelo:** Random Forest\n\n"
-        "**Umbral:** 0.35\n\n"
         "**Métrica clave:** Recall 92.4%\n\n"
         "**ROC-AUC:** 0.9476"
     )
@@ -44,15 +71,19 @@ st.title("🎯 Predicción de Hot/Cold Leads")
 uploaded_file = render_upload()
 
 if uploaded_file is not None:
-    # Procesar archivo
-    if "results" not in st.session_state or st.session_state.get("file_name") != uploaded_file.name:
+    # Procesar archivo (o re-procesar si cambió el umbral)
+    file_changed = st.session_state.get("file_name") != uploaded_file.name
+    umbral_changed = st.session_state.get("umbral_used") != umbral
+
+    if "results" not in st.session_state or file_changed or umbral_changed:
         with st.spinner("Procesando leads... esto puede tardar unos segundos."):
             try:
-                results, df_model, stats = run_inference(uploaded_file)
+                results, df_model, stats = run_inference(uploaded_file, umbral)
                 st.session_state["results"] = results
                 st.session_state["df_model"] = df_model
                 st.session_state["stats"] = stats
                 st.session_state["file_name"] = uploaded_file.name
+                st.session_state["umbral_used"] = umbral
             except Exception as e:
                 st.error(f"Error al procesar el archivo: {e}")
                 st.stop()

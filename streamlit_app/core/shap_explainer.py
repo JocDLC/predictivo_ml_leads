@@ -42,24 +42,32 @@ def explain_lead(df_model_row, top_n=10):
 
     shap_values = explainer.shap_values(df_model_row)
 
-    # Para clasificación binaria, shap_values[1] = clase positiva (Hot)
+    # Extraer SHAP values para clase positiva (Hot)
     if isinstance(shap_values, list):
-        sv = shap_values[1][0]
-        base_value = explainer.expected_value[1]
+        sv = np.array(shap_values[1]).flatten()
+        base_value = float(explainer.expected_value[1])
+    elif isinstance(shap_values, np.ndarray) and shap_values.ndim == 3:
+        sv = shap_values[0, :, 1].flatten()
+        base_value = float(explainer.expected_value[1])
     else:
-        sv = shap_values[0]
-        base_value = explainer.expected_value
+        sv = np.array(shap_values).flatten()
+        base_value = float(
+            explainer.expected_value[1]
+            if hasattr(explainer.expected_value, '__len__')
+            else explainer.expected_value
+        )
 
     feature_names = df_model_row.columns.tolist()
-    feature_values = df_model_row.values[0]
+    feature_values = df_model_row.values.flatten()
 
     indices_sorted = np.argsort(np.abs(sv))[::-1][:top_n]
 
     rows = []
     for idx in indices_sorted:
-        impact = sv[idx]
-        name = feature_names[idx]
-        value = feature_values[idx]
+        i = int(idx)
+        impact = float(sv[i])
+        name = feature_names[i]
+        value = feature_values[i]
 
         # Traducir nombre técnico a descripción legible
         readable_name = translate_feature_name(name)
