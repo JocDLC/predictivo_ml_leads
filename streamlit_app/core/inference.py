@@ -169,9 +169,13 @@ def apply_feature_engineering(df, artifacts):
     return df
 
 
-def run_inference(uploaded_file):
+def run_inference(uploaded_file, umbral=None):
     """
     Pipeline completo: archivo Excel → DataFrame con predicciones.
+
+    Args:
+        uploaded_file: Archivo Excel subido por el usuario.
+        umbral: Umbral de decisión (default: usa el guardado en artifacts).
 
     Retorna:
         results: DataFrame con columnas [lead_id, prediccion, probabilidad_hot, ...]
@@ -179,7 +183,8 @@ def run_inference(uploaded_file):
         stats: dict con estadísticas del proceso
     """
     model, artifacts = load_model_and_artifacts()
-    umbral = artifacts["umbral"]
+    if umbral is None:
+        umbral = artifacts["umbral"]
 
     df = pd.read_excel(uploaded_file)
     df.columns = [fix_encoding(c) for c in df.columns]
