@@ -11,9 +11,14 @@ from components.upload import render_upload
 from components.results_grid import render_stats, render_grid
 from components.lead_detail import render_lead_selector, render_lead_detail
 from components.model_report import render_model_report
+from components.history import render_history_page
 from core.inference import run_inference
 from core.shap_explainer import explain_lead
 from core.inference import load_model_and_artifacts
+from core.memory import init_db, save_session
+
+# Inicializar DB en arranque
+init_db()
 
 # ─────────────────────────── Config ───────────────────────────
 
@@ -49,7 +54,7 @@ with st.sidebar:
     )
     page = st.radio(
         "Navegación",
-        ["🎯 Predicción de Leads", "📊 Reporte del Modelo"],
+        ["🎯 Predicción de Leads", "📊 Reporte del Modelo", "📜 Historial"],
         label_visibility="collapsed",
     )
     st.markdown("---")
@@ -62,7 +67,9 @@ with st.sidebar:
 
 # ─────────────────────────── Main ───────────────────────────
 
-if page == "📊 Reporte del Modelo":
+if page == "📜 Historial":
+    render_history_page()
+elif page == "📊 Reporte del Modelo":
     render_model_report()
 else:
     st.title("🎯 Predicción de Hot/Cold Leads")
@@ -79,6 +86,10 @@ else:
                     st.session_state["df_model"] = df_model
                     st.session_state["stats"] = stats
                     st.session_state["file_name"] = uploaded_file.name
+                    # 💾 Guardar sesión en memoria persistente
+                    session_id = save_session(uploaded_file.name, results, stats)
+                    st.session_state["last_session_id"] = session_id
+                    st.toast(f"✅ Sesión #{session_id} guardada en historial", icon="💾")
                 except Exception as e:
                     st.error(f"Error al procesar el archivo: {e}")
                     st.stop()

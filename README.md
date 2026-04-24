@@ -39,21 +39,43 @@ predictivo_ml_leads/
 
 ---
 
-## Requisitos
+## ⚡ Instalación rápida (nuevo equipo)
 
-- Python 3.11+
-- Git
-- Docker Desktop (para MLflow)
-
-## Configuración del Entorno
-
-```bash
-git clone <repo-url>
+### 1. Clonar el repositorio
+```powershell
+git clone https://github.com/JocDLC/predictivo_ml_leads.git
 cd predictivo_ml_leads
-python -m venv venv
-venv\Scripts\activate
+```
+
+### 2. Crear entorno virtual e instalar dependencias
+```powershell
+python -m venv .venv
+.venv\Scripts\activate
 pip install -r requirements.txt
 ```
+
+### 3. Copiar artefactos del modelo ⚠️
+Los archivos del modelo **no están en git** (son binarios pesados).  
+Cópialos manualmente desde el equipo original a la carpeta `models/`:
+
+```
+models/
+├── best_model.joblib              ← modelo Random Forest entrenado
+└── preprocessing_config.joblib   ← encoders, umbral, columnas
+```
+
+> Si no tienes los archivos, ejecútalos con `src/save_artifacts.py` después de entrenar.
+
+### 4. Levantar la app Streamlit
+```powershell
+.venv\Scripts\python.exe -m streamlit run streamlit_app/app.py
+```
+Acceder en: **http://localhost:8501**
+
+### Requisitos del sistema
+- Python 3.11+ (probado con 3.14)
+- Git
+- ~500 MB de espacio (dependencias)
 
 ---
 

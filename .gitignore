@@ -41,5 +41,9 @@ prueba.py
 # Exception: test sample files for demo/validation
 !data/test/*.xlsx
 
-# Preprocessing artifacts (binary, regenerable with src/save_artifacts.py)
+# Preprocessing artifacts (binary, regenerable con src/save_artifacts.py)
 models/preprocessing_config.joblib
+models/best_model.joblib
+
+# Base de datos SQLite de historial (local, no compartir)
+data/memory/*.db
