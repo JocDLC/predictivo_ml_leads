@@ -233,15 +233,11 @@ Transformaciones aplicadas en `02_feature_engineering.ipynb`:
   la media global como fallback.
 - **Resultado:** `concesionario` → `concesionario_target_enc` (float entre 0 y 1).
 
-### PASO 17 — One-hot encoding para el resto de categóricas
-- **Qué:** Aplicar one-hot encoding (con `drop_first=True`) a:
-  `dia_semana_creacion`, `nombre_formulario`, `campana`, `plataforma`,
-  `origen_creacion`, `vehiculo_interes`, `origen`, `franja_horaria`.
-- **Por qué:** Son features categóricas nominales (sin orden natural). One-hot encoding
-  es la forma estándar de representarlas numéricamente para modelos de machine learning.
-  Se usa `drop_first=True` para evitar multicolinealidad perfecta (la categoría eliminada
-  queda implícita cuando todas las demás son 0).
-- **Resultado:** 8 columnas categóricas → 44 columnas binarias (0/1).
+### PASO 17 — Bayesian encoding para el resto de categóricas
+- **Qué:** Aplicar Bayesian Encoding a las 6 features categóricas restantes:
+  `nombre_formulario`, `campana`, `origen_creacion`, `vehiculo_interes`, `origen` y `franja_horaria`.
+- **Por qué:** En lugar de One-Hot Encoding (que creaba 44 columnas), se opta por una técnica más avanzada. Bayesian Encoding reemplaza cada categoría por un valor numérico que representa la probabilidad de que esa categoría pertenezca a la clase positiva (target=1), con un suavizado para evitar el sobreajuste. Esto reduce drásticamente la dimensionalidad (de 44 a 6 columnas) y captura la información predictiva de cada categoría de forma mucho más eficiente.
+- **Resultado:** 6 columnas categóricas → 6 columnas numéricas (ej. `vehiculo_interes_bayes_enc`).
 
 ### PASO 18 — Split train/test estratificado
 - **Qué:** Dividir el dataset en 80% entrenamiento y 20% test, estratificando por `target`.
@@ -259,12 +255,12 @@ Transformaciones aplicadas en `02_feature_engineering.ipynb`:
 
 | Métrica | Valor |
 |---|---|
-| Features totales | **49** (5 numéricas + 44 dummies) |
+| Features totales | **11** (todas numéricas) |
 | Filas train | 6,737 |
 | Filas test | 1,685 |
 | Nulos | 0 |
 
-### Features numéricas (5):
+### Features numéricas (11):
 | Feature | Origen | Descripción |
 |---|---|---|
 | `mes_creacion` | Original | Mes de creación (1, 12) |
@@ -286,8 +282,8 @@ Generadas por one-hot encoding de: `dia_semana_creacion` (6), `nombre_formulario
 |---|---|
 | `data/raw/leads_raw.csv` | Dataset original (sin email), encoding latin-1 |
 | `data/processed/leads_cleaned.csv` | Dataset limpio, encoding UTF-8, 0 nulos |
-| `data/processed/X_train.csv` | Features de entrenamiento (6,737 × 49) |
-| `data/processed/X_test.csv` | Features de test (1,685 × 49) |
+| `data/processed/X_train.csv` | Features de entrenamiento (6,737 × 11) |
+| `data/processed/X_test.csv` | Features de test (1,685 × 11) |
 | `data/processed/y_train.csv` | Target de entrenamiento |
 | `data/processed/y_test.csv` | Target de test |
 | `notebooks/00_data_engineering.ipynb` | Notebook de limpieza de datos |

@@ -188,12 +188,14 @@ def apply_feature_engineering(df, artifacts):
     known_cats = artifacts["known_categories"]
     conc_means = artifacts["concesionario_means"]
     global_mean = artifacts["global_mean"]
+    bayesian_encoders = artifacts.get("bayesian_encoders", {}) # Clave para v2
     training_cols = artifacts["training_columns"]
 
     # Features derivadas
     df["es_fin_de_semana"] = df["dia_semana_creacion"].isin(
         ["sábado", "domingo"]
     ).astype(int)
+    df = df.drop(columns=["dia_semana_creacion"])
     df["franja_horaria"] = df["hora_creacion"].apply(clasificar_franja)
 
     # Agrupar categorías desconocidas en "otros"
@@ -207,9 +209,12 @@ def apply_feature_engineering(df, artifacts):
     )
     df = df.drop(columns=["concesionario"])
 
-    # One-hot encoding
-    onehot_cols = list(df.select_dtypes(include="object").columns)
-    df = pd.get_dummies(df, columns=onehot_cols, drop_first=True, dtype=int)
+    # --- MODELO v2: Bayesian Encoding ---
+    # Aplicar encoders Bayesianos guardados en los artefactos
+    for col, encoder in bayesian_encoders.items():
+        if col in df.columns:
+            df[f"{col}_bayes_enc"] = encoder.transform(df[col])
+            df = df.drop(columns=[col]) # Eliminar la columna original
 
     # Alinear con columnas de entrenamiento
     df = df.reindex(columns=training_cols, fill_value=0)
