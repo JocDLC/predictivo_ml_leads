@@ -42,13 +42,19 @@ def explain_lead(df_model_row, top_n=10):
 
     shap_values = explainer.shap_values(df_model_row)
 
-    # Para clasificación binaria, shap_values[1] = clase positiva (Hot)
+    # Para clasificación binaria, clase positiva (Hot) = índice 1
+    ev = explainer.expected_value
     if isinstance(shap_values, list):
-        sv = shap_values[1][0]
-        base_value = explainer.expected_value[1]
+        # SHAP < 0.42: lista de arrays [clase_0, clase_1]
+        sv = np.array(shap_values[1]).flatten()
+        base_value = float(ev[1])
+    elif np.ndim(shap_values) == 3:
+        # SHAP >= 0.44: array 3D (n_samples, n_features, n_classes)
+        sv = shap_values[0, :, 1]
+        base_value = float(ev[1])
     else:
-        sv = shap_values[0]
-        base_value = explainer.expected_value
+        sv = np.array(shap_values).flatten()
+        base_value = float(ev) if np.ndim(ev) == 0 else float(ev[1])
 
     feature_names = df_model_row.columns.tolist()
     feature_values = df_model_row.values[0]
@@ -57,6 +63,7 @@ def explain_lead(df_model_row, top_n=10):
 
     rows = []
     for idx in indices_sorted:
+        idx = int(idx)
         impact = sv[idx]
         name = feature_names[idx]
         value = feature_values[idx]
@@ -87,24 +94,20 @@ def translate_feature_name(name):
         "dia_creacion": "Día del mes",
         "hora_creacion": "Hora de creación",
         "es_fin_de_semana": "¿Fin de semana?",
-        "concesionario_target_enc": "Concesionario (tasa histórica)",
+        "concesionario_target_enc": "Concesionario (Target Enc.)",
+        "nombre_formulario_bayes_enc": "Formulario (Bayesian Enc.)",
+        "campana_bayes_enc": "Campaña (Bayesian Enc.)",
+        "origen_creacion_bayes_enc": "Origen Creación (Bayesian Enc.)",
+        "vehiculo_interes_bayes_enc": "Vehículo (Bayesian Enc.)",
+        "origen_bayes_enc": "Canal (Bayesian Enc.)",
+        "franja_horaria_bayes_enc": "Franja Horaria (Bayesian Enc.)",
     }
 
     if name in translations:
         return translations[name]
 
-    prefixes = {
-        "dia_semana_creacion_": "Día: ",
-        "nombre_formulario_": "Formulario: ",
-        "campana_": "Campaña: ",
-        "origen_creacion_": "Origen creación: ",
-        "vehiculo_interes_": "Vehículo: ",
-        "origen_": "Canal: ",
-        "franja_horaria_": "Franja: ",
-    }
-
-    for prefix, label in prefixes.items():
-        if name.startswith(prefix):
-            return label + name[len(prefix):]
+    # Fallback para cualquier otra columna que no esté en el diccionario
+    name = name.replace("_", " ").replace("bayes enc", "(Bayesian Enc.)").strip()
+    return name.title()
 
     return name

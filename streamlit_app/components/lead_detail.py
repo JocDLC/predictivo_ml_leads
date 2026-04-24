@@ -6,27 +6,75 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def render_lead_selector(results):
-    """Permite seleccionar un lead para ver el detalle."""
+def render_lead_selector(all_results, filtered_results):
+    """Permite seleccionar un lead por búsqueda de ID (todos) o dropdown (filtrados).
+
+    Returns:
+        tuple(DataFrame, int): (display_df, positional_index) — el DataFrame de origen
+        y el índice posicional dentro de él.
+    """
     st.markdown("### 🔍 Detalle de un lead")
-    st.caption("Selecciona un lead para ver por qué el modelo lo clasificó como Hot o Cold.")
+    st.caption("Busca por ID (busca en **todos** los leads) o selecciona de la lista filtrada.")
 
-    if "lead_id" in results.columns:
-        options = results["lead_id"].tolist()
-        label_col = "lead_id"
-    else:
-        options = results.index.tolist()
-        label_col = "index"
+    has_lead_id = "lead_id" in all_results.columns
 
-    max_display = min(len(options), 1000)
+    # --- Layout ---
+    col_search, col_select = st.columns([1, 2])
 
-    selected_idx = st.selectbox(
-        f"Selecciona un lead ({label_col})",
-        options=range(max_display),
-        format_func=lambda i: f"{options[i]} — {results.iloc[i]['prediccion']} ({results.iloc[i]['probabilidad_hot']}%)",
-    )
+    # --- Búsqueda por ID (sobre todos los resultados) ---
+    search_result = None  # (display_df, positional_idx)
+    with col_search:
+        search_id = st.text_input(
+            "🔎 Buscar por ID",
+            placeholder="Pega o escribe el Lead ID...",
+            key="lead_id_search",
+        )
+        if search_id and has_lead_id:
+            matches = all_results[all_results["lead_id"].astype(str).str.contains(search_id, case=False, na=False)]
+            if len(matches) == 0:
+                st.warning(f"No se encontró ningún lead con '{search_id}'")
+            elif len(matches) == 1:
+                pos = all_results.index.get_loc(matches.index[0])
+                pred = matches.iloc[0]["prediccion"]
+                prob = matches.iloc[0]["probabilidad_hot"]
+                st.success(f"✅ **{matches.iloc[0]['lead_id']}** — {pred} ({prob}%)")
+                search_result = (all_results, pos)
+            else:
+                st.info(f"{len(matches)} coincidencias:")
+                match_options = matches["lead_id"].tolist()
+                chosen = st.selectbox(
+                    "Resultados de búsqueda",
+                    options=range(len(match_options)),
+                    format_func=lambda i: f"{match_options[i]} — {matches.iloc[i]['prediccion']} ({matches.iloc[i]['probabilidad_hot']}%)",
+                    key="search_match_select",
+                )
+                pos = all_results.index.get_loc(matches.index[chosen])
+                search_result = (all_results, pos)
+        elif search_id and not has_lead_id:
+            st.warning("El archivo no contiene columna de Lead ID.")
 
-    return selected_idx
+    # --- Dropdown (sobre resultados filtrados) ---
+    with col_select:
+        if has_lead_id:
+            options = filtered_results["lead_id"].tolist()
+            label_col = "lead_id"
+        else:
+            options = filtered_results.index.tolist()
+            label_col = "index"
+
+        max_display = min(len(options), 1000)
+        selected_idx = st.selectbox(
+            f"O selecciona de la lista ({label_col})",
+            options=range(max_display),
+            format_func=lambda i: f"{options[i]} — {filtered_results.iloc[i]['prediccion']} ({filtered_results.iloc[i]['probabilidad_hot']}%)",
+            key="lead_dropdown_select",
+        )
+
+    # Búsqueda tiene prioridad
+    if search_result is not None:
+        return search_result
+
+    return (filtered_results, selected_idx)
 
 
 def render_lead_detail(results, explanation_df, base_value, predicted_proba, row_idx):
