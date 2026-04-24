@@ -109,5 +109,3 @@ def translate_feature_name(name):
     # Fallback para cualquier otra columna que no esté en el diccionario
     name = name.replace("_", " ").replace("bayes enc", "(Bayesian Enc.)").strip()
     return name.title()
-
-    return name

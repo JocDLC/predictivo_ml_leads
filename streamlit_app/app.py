@@ -22,6 +22,11 @@ st.set_page_config(
     page_icon="🎯",
     layout="wide",
     initial_sidebar_state="expanded",
+    menu_items={
+        "Get help": None,
+        "Report a Bug": None,
+        "About": "Predictivo ML Leads v1.0 — Clasificación de Hot/Cold Leads para Renault México.",
+    },
 )
 
 # ─────────────────────────── Sidebar ───────────────────────────
