@@ -54,19 +54,7 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-### 3. Copiar artefactos del modelo ⚠️
-Los archivos del modelo **no están en git** (son binarios pesados).  
-Cópialos manualmente desde el equipo original a la carpeta `models/`:
-
-```
-models/
-├── best_model.joblib              ← modelo Random Forest entrenado
-└── preprocessing_config.joblib   ← encoders, umbral, columnas
-```
-
-> Si no tienes los archivos, ejecútalos con `src/save_artifacts.py` después de entrenar.
-
-### 4. Levantar la app Streamlit
+### 3. Levantar la app Streamlit
 ```powershell
 .venv\Scripts\python.exe -m streamlit run streamlit_app/app.py
 ```
