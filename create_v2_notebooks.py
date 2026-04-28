@@ -192,13 +192,14 @@ axes[1].set_ylabel("Día de la Semana")
 plt.tight_layout()
 plt.show()"""),
     ('markdown', """**Diferencias V1 vs V2 - Mapas de Calor Temporales:**\\nEn la V1 los mapas de calor estaban gravemente distorsionados porque la extracción original perdía la hora real y los bots procesaban en lotes masivos. Tras corregir la extracción y limpiar los bots en V2, **el mapa de calor recupera su lógica comercial**: observamos clústeres de volumen claros en días y horarios laborables de alto contacto orgánico."""),
-    ('markdown', """## Correlación entre Variables Numéricas\\n\\n**Diferencias con V1:**\\nEn V1, la variable `anio_creacion` mostraba correlación porque los datos históricos mezclaban varios años. En esta V2, hemos eliminado `anio_creacion` porque filtramos estrictamente el dataset al 2025, lo cual vuelve su varianza cero (no aporta valor predictivo).\\nAdemás, `hora_creacion` ahora refleja correctamente la hora de extracción sin la contaminación del chatbot (el cual generaba que todas las horas estuvieran centralizadas artificialmente o con nulos)."""),
+    ('markdown', """## Correlación entre Variables Numéricas"""),
     ('code', """num_cols = df.select_dtypes(include=['int64', 'float64']).columns
 plt.figure(figsize=(10, 8))
 sns.heatmap(df[num_cols].corr(), annot=True, cmap='coolwarm', fmt=".2f", linewidths=0.5)
 plt.title("Matriz de Correlación - Features Numéricas")
 plt.tight_layout()
 plt.show()"""),
+    ('markdown', """**Diferencias V1 vs V2 - Matriz de Correlación Numérica:**\\nEn V1, la variable `anio_creacion` mostraba correlación porque los datos históricos mezclaban varios años. En esta V2, hemos eliminado `anio_creacion` porque filtramos estrictamente el dataset al 2025, lo cual vuelve su varianza cero (no aporta valor predictivo).\\nAdemás, `hora_creacion` ahora refleja correctamente la hora de extracción sin la contaminación del chatbot (el cual generaba que todas las horas estuvieran centralizadas artificialmente o con nulos)."""),
     ('markdown', """## Hallazgos Clave del EDA y Recomendaciones
 
 ================================================================================
