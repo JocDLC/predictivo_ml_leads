@@ -192,7 +192,7 @@ axes[1].set_ylabel("Día de la Semana")
 plt.tight_layout()
 plt.show()"""),
     ('markdown', """**Diferencias V1 vs V2 - Mapas de Calor Temporales:**\\nEn la V1 los mapas de calor estaban gravemente distorsionados porque la extracción original perdía la hora real y los bots procesaban en lotes masivos. Tras corregir la extracción y limpiar los bots en V2, **el mapa de calor recupera su lógica comercial**: observamos clústeres de volumen claros en días y horarios laborables de alto contacto orgánico."""),
-    ('markdown', """## Correlación entre Variables Numéricas"""),
+    ('markdown', """## Correlación entre Variables Numéricas\\nAnálisis de la relación lineal entre las variables numéricas y nuestra variable objetivo (Target). Esto nos permite identificar si existe alguna característica temporal que tenga un peso fuerte por sí sola sobre la conversión."""),
     ('code', """num_cols = df.select_dtypes(include=['int64', 'float64']).columns
 plt.figure(figsize=(10, 8))
 sns.heatmap(df[num_cols].corr(), annot=True, cmap='coolwarm', fmt=".2f", linewidths=0.5)
