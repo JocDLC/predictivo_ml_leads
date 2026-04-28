@@ -199,7 +199,10 @@ sns.heatmap(df[num_cols].corr(), annot=True, cmap='coolwarm', fmt=".2f", linewid
 plt.title("Matriz de Correlación - Features Numéricas")
 plt.tight_layout()
 plt.show()"""),
-    ('markdown', """**Diferencias V1 vs V2 - Matriz de Correlación Numérica:**\\nEn V1, la variable `anio_creacion` mostraba correlación porque los datos históricos mezclaban varios años. En esta V2, hemos eliminado `anio_creacion` porque filtramos estrictamente el dataset al 2025, lo cual vuelve su varianza cero (no aporta valor predictivo).\\nAdemás, `hora_creacion` ahora refleja correctamente la hora de extracción sin la contaminación del chatbot (el cual generaba que todas las horas estuvieran centralizadas artificialmente o con nulos)."""),
+    ('markdown', """**Resultados de la Matriz de Correlación:**\\nAl analizar la relación de las variables temporales numéricas con el Target (1=Hot, 0=Cold), observamos que:\\n- **`mes_creacion` (-0.20):** Existe una ligera correlación negativa, lo cual indica que en los meses iniciales hay mayor conversión y a medida que avanzan los meses la tasa tiende a disminuir ligeramente.\\n- **`dia_creacion` (0.14):** Existe una leve correlación positiva, sugiriendo un aumento menor en la conversión hacia finales de mes.\\n- **`hora_creacion` (~0.00):** No existe una relación *lineal* fuerte entre la hora aislada y la conversión, lo cual tiene sentido ya que la conversión tiene picos en ciertos horarios laborables (relación no lineal), requiriendo modelos basados en árboles para capturar esta complejidad.
+
+---
+**Diferencias V1 vs V2 - Matriz de Correlación Numérica:**\\nEn V1, la variable `anio_creacion` mostraba correlación porque los datos históricos mezclaban varios años. En esta V2, hemos eliminado `anio_creacion` porque filtramos estrictamente el dataset al 2025, lo cual vuelve su varianza cero (no aporta valor predictivo).\\nAdemás, `hora_creacion` ahora refleja correctamente la hora de extracción sin la contaminación del chatbot (el cual generaba que todas las horas estuvieran centralizadas artificialmente o con nulos)."""),
     ('markdown', """## Hallazgos Clave del EDA y Recomendaciones
 
 ================================================================================
