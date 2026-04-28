@@ -83,23 +83,28 @@ for i, col in enumerate(cols_temp):
     
     # Volumen
     ax_vol = axes[i, 0]
-    sns.countplot(data=df, x=col, color='steelblue', ax=ax_vol)
+    order = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'] if col == 'dia_semana_creacion' else None
+    if col == 'dia_semana_creacion':
+        df['dia_semana_creacion'] = df['dia_semana_creacion'].str.capitalize()
+    sns.countplot(data=df, x=col, color='steelblue', order=order, ax=ax_vol)
     ax_vol.set_title(f'Volumen por {titulos[i]}')
     ax_vol.tick_params(axis='x', rotation=45)
     
     # Porcentajes Volumen
     total = len(df)
     for p in ax_vol.patches:
-        percentage = f'{100 * p.get_height() / total:.1f}%'
+        height = p.get_height()
+        if pd.isna(height): height = 0
+        percentage = f'{100 * height / total:.1f}%'
         x = p.get_x() + p.get_width() / 2
-        y = p.get_height()
-        if p.get_height() > 0:
+        y = height
+        if height > 0:
             ax_vol.annotate(percentage, (x, y), ha='center', va='bottom', fontsize=9)
         
     # Tasa de conversión
     ax_conv = axes[i, 1]
     conv = df.groupby(col)['target'].mean().reset_index()
-    sns.barplot(data=conv, x=col, y='target', color='seagreen', ax=ax_conv)
+    sns.barplot(data=conv, x=col, y='target', color='seagreen', order=order, ax=ax_conv)
     ax_conv.set_title(f'Tasa de Conversión por {titulos[i]}')
     ax_conv.axhline(df['target'].mean(), color='red', linestyle='--', label='Media Global')
     ax_conv.tick_params(axis='x', rotation=45)
@@ -118,14 +123,19 @@ plt.show()"""),
     ('markdown', """**Evaluación y Comentarios V2:**
 A diferencia de la V1, donde el volumen mensual no permitía deducir tendencias por el ruido provocado por el bot, aquí se observa claramente la cantidad de leads orgánicos gestionados por el equipo comercial de forma mensual. Al remover meses anómalos, el modelo aprende patrones temporales correctos en lugar de sesgarse por picos atípicos."""),
     ('markdown', """## Análisis de Variables Categóricas Principales
-Volumen y Tasa de Conversión para variables como Plataforma, Origen, etc."""),
-    ('code', """variables_cat = ['plataforma', 'origen', 'campana', 'concesionario']
+Volumen y Tasa de Conversión para variables categóricas clave."""),
+    ('code', """variables_cat = ['origen', 'campana', 'concesionario', 'nombre_formulario']
 for col in variables_cat:
     if col not in df.columns: continue
+    
+    # Truncar nombres muy largos para que se vean en los gráficos
+    df[col] = df[col].astype(str).apply(lambda x: x[:30] + '...' if len(x) > 30 else x)
+    
     top_10 = df[col].value_counts().nlargest(10).index
     df_top = df[df[col].isin(top_10)]
     
     fig, axes = plt.subplots(1, 2, figsize=(15, 4))
+    plt.subplots_adjust(wspace=0.3, left=0.15)
     
     # Volumen
     sns.countplot(data=df_top, y=col, order=top_10, color='steelblue', ax=axes[0])
@@ -179,7 +189,7 @@ axes[1].set_ylabel("Día de la Semana")
 
 plt.tight_layout()
 plt.show()"""),
-    ('markdown', """## Correlación entre Variables Numéricas"""),
+    ('markdown', """## Correlación entre Variables Numéricas\\n\\n**Diferencias con V1:**\\nEn V1, la variable `anio_creacion` mostraba correlación porque los datos históricos mezclaban varios años. En esta V2, hemos eliminado `anio_creacion` porque filtramos estrictamente el dataset al 2025, lo cual vuelve su varianza cero (no aporta valor predictivo).\\nAdemás, `hora_creacion` ahora refleja correctamente la hora de extracción sin la contaminación del chatbot (el cual generaba que todas las horas estuvieran centralizadas artificialmente o con nulos)."""),
     ('code', """num_cols = df.select_dtypes(include=['int64', 'float64']).columns
 plt.figure(figsize=(10, 8))
 sns.heatmap(df[num_cols].corr(), annot=True, cmap='coolwarm', fmt=".2f", linewidths=0.5)
@@ -233,7 +243,7 @@ df = pd.read_csv(CLEAN_PATH)
 print(f"Dataset cargado: {df.shape[0]:,} filas x {df.shape[1]} columnas")"""),
     ('markdown', """## 1. Eliminar features sin valor predictivo (Data Leakage)
 Igual que en V1, descartamos `anio_creacion` (no tiene varianza en 2025), `subtipo_interes` y `plataforma` (que revelan información post-cualificación)."""),
-    ('code', """cols_eliminar = ["anio_creacion", "subtipo_interes", "plataforma"]
+    ('code', """cols_eliminar = ["subtipo_interes"]
 cols_eliminar = [c for c in cols_eliminar if c in df.columns]
 
 df = df.drop(columns=cols_eliminar)

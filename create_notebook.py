@@ -59,8 +59,8 @@ display(df_raw.head(3))"""),
 
     nbf.v4.new_markdown_cell("## 3. Renombrar columnas a snake_case y crear fechas"),
     
-    nbf.v4.new_code_cell("""# Extraer año, mes, etc.
-df_raw["fecha_dt"] = pd.to_datetime(df_raw["Fecha de creación"], dayfirst=True, errors="coerce")
+    nbf.v4.new_code_cell("""# Extraer año, mes, etc. usando la fecha ingresada por el cliente (que contiene la hora correcta)
+df_raw["fecha_dt"] = pd.to_datetime(df_raw["Fecha de creación por el cliente"], dayfirst=True, errors="coerce")
 df_raw["Año creación"] = df_raw["fecha_dt"].dt.year
 df_raw["Mes creación"] = df_raw["fecha_dt"].dt.month
 df_raw["Día creación"] = df_raw["fecha_dt"].dt.day
@@ -139,14 +139,22 @@ print(f"  0 (Cold Lead):  {cold_leads:,} ({cold_leads/len(df)*100:.1f}%)")
 print(f"  Total:          {len(df):,}")
 
 plt.figure(figsize=(6, 4))
-df["target"].value_counts().plot(kind="bar", color=["#e74c3c", "#2ecc71"], edgecolor="black")
+ax = df["target"].value_counts().plot(kind="bar", color=["#e74c3c", "#2ecc71"], edgecolor="black")
 plt.xticks([0, 1], ["Cold Lead (0)", "Hot Lead (1)"], rotation=0)
 plt.title("Distribución del Target — Hot Lead vs Cold Lead (2025)")
 plt.ylabel("Cantidad de leads")
+
+total = len(df)
+for p in ax.patches:
+    percentage = f'{100 * p.get_height() / total:.1f}%'
+    x = p.get_x() + p.get_width() / 2
+    y = p.get_height()
+    ax.annotate(percentage, (x, y), ha='center', va='bottom', fontsize=11, fontweight='bold')
+
 plt.tight_layout()
 plt.show()"""),
 
-    nbf.v4.new_markdown_cell("## 8. Eliminar columnas con data leakage y sin valor\n\nConservaremos únicamente las características que existen ANTES de la llamada, eliminando IDs y valores vacíos."),
+    nbf.v4.new_markdown_cell("## 8. Eliminar columnas con data leakage y sin valor\\n\\n**Diferencias con V1:**\\nEn esta V2 eliminamos directamente `anio_creacion` (ya que al filtrar solo por 2025 su varianza es 0) y `plataforma` (ya que al eliminar el CHATBOT, el 100% de los leads provienen de `MX_LEAD_QUALIF`, volviendo a la variable inútil). Conservaremos el resto de características que existen ANTES de la llamada."),
 
     nbf.v4.new_code_cell("""COLS_LEAKAGE = [
     "sub_cualificacion", "otra_informacion", "comentario", "descripcion", 
@@ -156,8 +164,8 @@ plt.show()"""),
 COLS_SIN_VALOR = ["lead_id", "tipo_interes", "cualificacion"]
 
 columnas_finales_requeridas = [
-    "anio_creacion", "mes_creacion", "dia_creacion", "hora_creacion", "dia_semana_creacion",
-    "nombre_formulario", "campana", "plataforma", "origen_creacion", "subtipo_interes",
+    "mes_creacion", "dia_creacion", "hora_creacion", "dia_semana_creacion",
+    "nombre_formulario", "campana", "origen_creacion", "subtipo_interes",
     "vehiculo_interes", "concesionario", "origen", "target"
 ]
 
