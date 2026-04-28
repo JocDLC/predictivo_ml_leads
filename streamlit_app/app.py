@@ -16,6 +16,7 @@ from core.inference import run_inference
 from core.shap_explainer import explain_lead
 from core.inference import load_model_and_artifacts
 from core.memory import init_db, save_session
+from core.theme import apply_theme
 
 # Inicializar DB en arranque
 init_db()
@@ -30,7 +31,7 @@ st.set_page_config(
     menu_items={
         "Get help": None,
         "Report a Bug": None,
-        "About": "Predictivo ML Leads v1.0 — Clasificación de Hot/Cold Leads para Renault México.",
+        "About": "Predictivo ML Leads v2.0 — Clasificación de Hot/Cold Leads para Renault México.",
     },
 )
 
@@ -58,12 +59,32 @@ with st.sidebar:
         label_visibility="collapsed",
     )
     st.markdown("---")
-    st.markdown("### ⚙️ Configuración")
-    st.info(f"🤖 **Modelo:** Random Forest\n\n🎚️ **Umbral:** {umbral}")
-    st.markdown("### 📈 Rendimiento (Test)")
-    st.success(f"🎯 **Recall:** {metrics.get('Recall')}\n\n🏆 **ROC-AUC:** {metrics.get('ROC-AUC')}")
+    
+    is_dark_mode = st.toggle("🌙 Modo Oscuro", value=False)
+    apply_theme(is_dark_mode)
+    
     st.markdown("---")
-    st.caption("v2.0 — Entrenado con datos dic 2025 - ene 2026")
+    
+    # Tarjeta unificada para Configuración y Rendimiento
+    st.sidebar.markdown(
+        f"""
+<div class="custom-card" style="padding: 15px; margin-bottom: 20px;">
+    <h4 style="margin-top: 0; font-size: 1.1rem; border-bottom: 1px solid rgba(150,150,150,0.2); padding-bottom: 10px; margin-bottom: 15px;">
+        ⚙️ Configuración
+    </h4>
+    <div style="font-size: 0.95rem; margin-bottom: 8px;">🤖 <b>Modelo:</b> Random Forest</div>
+    <div style="font-size: 0.95rem; margin-bottom: 20px;">🎚️ <b>Umbral:</b> {umbral}</div>
+    
+    <h4 style="margin-top: 0; font-size: 1.1rem; border-bottom: 1px solid rgba(150,150,150,0.2); padding-bottom: 10px; margin-bottom: 15px;">
+        📈 Rendimiento (Test)
+    </h4>
+    <div style="font-size: 0.95rem; margin-bottom: 8px;">🎯 <b>Recall:</b> {metrics.get('Recall')}</div>
+    <div style="font-size: 0.95rem;">🏆 <b>ROC-AUC:</b> {metrics.get('ROC-AUC')}</div>
+</div>
+        """,
+        unsafe_allow_html=True
+    )
+    st.sidebar.caption("v2.0 — Entrenado con datos depurados del año 2025")
 
 # ─────────────────────────── Main ───────────────────────────
 
@@ -102,25 +123,31 @@ else:
         st.markdown("---")
         render_stats(stats)
 
-        # Grilla de resultados
+        # Layout estilo Leadscore AI
         st.markdown("---")
-        df_filtered = render_grid(results)
+        
+        col_grid, col_detail = st.columns([2.2, 1.2])
+        
+        with col_grid:
+            df_filtered = render_grid(results)
 
-        # Detalle individual
-        st.markdown("---")
-        if len(df_filtered) > 0:
-            display_df, selected_idx = render_lead_selector(results, df_filtered)
+        with col_detail:
+            if len(df_filtered) > 0:
+                # Envolver en un contenedor de tarjeta
+                st.markdown('<div class="custom-card">', unsafe_allow_html=True)
+                display_df, selected_idx = render_lead_selector(results, df_filtered)
 
-            if selected_idx is not None:
-                original_idx = display_df.index[selected_idx]
-                model_row = df_model.iloc[original_idx]
+                if selected_idx is not None:
+                    original_idx = display_df.index[selected_idx]
+                    model_row = df_model.iloc[original_idx]
 
-                with st.spinner("Calculando explicación SHAP..."):
-                    explanation_df, base_value, predicted_proba = explain_lead(model_row)
+                    with st.spinner("Calculando SHAP..."):
+                        explanation_df, base_value, predicted_proba = explain_lead(model_row)
 
-                render_lead_detail(display_df, explanation_df, base_value, predicted_proba, selected_idx)
-        else:
-            st.warning("No hay leads que coincidan con los filtros seleccionados.")
+                    render_lead_detail(display_df, explanation_df, base_value, predicted_proba, selected_idx)
+                st.markdown('</div>', unsafe_allow_html=True)
+            else:
+                st.warning("No hay leads que coincidan con los filtros seleccionados.")
 
     else:
         # Estado vacío

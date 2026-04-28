@@ -141,27 +141,42 @@ def render_lead_detail(results, explanation_df, base_value, predicted_proba, row
 
 
 def render_shap_chart(explanation_df):
-    """Renderiza gráfico de barras horizontal con impactos SHAP."""
-    df_plot = explanation_df.sort_values("impacto_abs", ascending=True).tail(10)
-
-    fig, ax = plt.subplots(figsize=(8, max(4, len(df_plot) * 0.5)))
-
-    colors = ["#e74c3c" if v > 0 else "#3498db" for v in df_plot["impacto"]]
-
-    ax.barh(
-        range(len(df_plot)),
-        df_plot["impacto"].values,
-        color=colors,
-        edgecolor="white",
-        height=0.7,
-    )
-
-    ax.set_yticks(range(len(df_plot)))
-    ax.set_yticklabels(df_plot["feature"].values, fontsize=10)
-    ax.set_xlabel("Impacto SHAP (→ Hot | ← Cold)", fontsize=10)
-    ax.axvline(x=0, color="gray", linewidth=0.8, linestyle="-")
-    ax.set_title("Top factores de la predicción", fontsize=12, fontweight="bold")
-
-    plt.tight_layout()
-    st.pyplot(fig)
-    plt.close()
+    """Renderiza gráfico de barras horizontal con impactos SHAP estilo UI moderna."""
+    df_plot = explanation_df.sort_values("impacto_abs", ascending=True).tail(6)
+    
+    html = '<div class="shap-container">'
+    
+    for _, row in df_plot.iterrows():
+        feature = row["feature"]
+        impacto = row["impacto"]
+        
+        is_hot = impacto > 0
+        val_class = "shap-val-hot" if is_hot else "shap-val-cold"
+        sign = "+" if is_hot else ""
+        
+        # Calcular porcentaje para el ancho de la barra (max impacto en el top 6)
+        max_abs = df_plot["impacto_abs"].max()
+        if max_abs == 0:
+            max_abs = 1
+        width_pct = (abs(impacto) / max_abs) * 50 # 50% max for each side
+        
+        if is_hot:
+            bar_style = f"width: {width_pct}%; right: 50%;"
+            bar_class = "shap-bar-fill-hot"
+        else:
+            bar_style = f"width: {width_pct}%; left: 50%;"
+            bar_class = "shap-bar-fill-cold"
+        
+        html += f'''
+        <div class="shap-row">
+            <span class="shap-feature-name" title="{feature}">{feature}</span>
+            <span class="shap-feature-val {val_class}">{sign}{impacto:.2f}</span>
+        </div>
+        <div class="shap-bar-bg">
+            <div class="{bar_class}" style="{bar_style}"></div>
+        </div>
+        '''
+        
+    html += '</div>'
+    
+    st.markdown(html, unsafe_allow_html=True)

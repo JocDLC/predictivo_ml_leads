@@ -45,10 +45,74 @@ def load_clean_data():
 
 @st.cache_data
 def load_train_test():
-    X_train = pd.read_csv(os.path.join(DATA_DIR, "X_train.csv"))
-    X_test = pd.read_csv(os.path.join(DATA_DIR, "X_test.csv"))
-    y_train = pd.read_csv(os.path.join(DATA_DIR, "y_train.csv")).squeeze()
-    y_test = pd.read_csv(os.path.join(DATA_DIR, "y_test.csv")).squeeze()
+    """Regenera X_train/X_test aplicando el pipeline V2 desde leads_cleaned.csv."""
+    from sklearn.model_selection import train_test_split
+
+    df = pd.read_csv(CLEAN_PATH)
+    arts = joblib.load(MODEL_PATH.replace("best_model.joblib", "preprocessing_config.joblib"))
+
+    known_cats = arts["known_categories"]
+    conc_means = arts["concesionario_means"]
+    global_mean = arts["global_mean"]
+    bayesian_encoders = arts.get("bayesian_encoders", None)
+    training_cols = arts["training_columns"]
+
+    def clasificar_franja(hora):
+        if hora < 6:
+            return "madrugada"
+        elif hora < 12:
+            return "manana"
+        elif hora < 18:
+            return "tarde"
+        return "noche"
+
+    # Eliminar columnas sin valor (las que quitó el pipeline original)
+    drop_cols = [c for c in ["anio_creacion", "subtipo_interes", "plataforma"] if c in df.columns]
+    df = df.drop(columns=drop_cols)
+
+    # Features derivadas
+    df["es_fin_de_semana"] = df["dia_semana_creacion"].isin(["s\u00e1bado", "domingo"]).astype(int)
+    df["franja_horaria"] = df["hora_creacion"].apply(clasificar_franja)
+
+    # Agrupar categorías raras
+    for col, valid_cats in known_cats.items():
+        if col in df.columns:
+            df.loc[~df[col].isin(valid_cats), col] = "otros"
+
+    # Target encoding para concesionario
+    df["concesionario_target_enc"] = df["concesionario"].map(conc_means).fillna(global_mean)
+    df = df.drop(columns=["concesionario"])
+
+    X = df.drop(columns=["target"])
+    y = df["target"]
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42, stratify=y
+    )
+
+    if bayesian_encoders:
+        # V2: Bayesian Encoding — aplicar encoders entrenados solo sobre train
+        for col, encoder in bayesian_encoders.items():
+            if col in X_train.columns:
+                X_train[f"{col}_bayes_enc"] = encoder.transform(X_train[col]).values
+                X_train = X_train.drop(columns=[col])
+            if col in X_test.columns:
+                X_test[f"{col}_bayes_enc"] = encoder.transform(X_test[col]).values
+                X_test = X_test.drop(columns=[col])
+        # Eliminar columnas object restantes
+        for frame in [X_train, X_test]:
+            rem = list(frame.select_dtypes(include="object").columns)
+            if rem:
+                X_train = X_train.drop(columns=[c for c in rem if c in X_train.columns])
+                X_test = X_test.drop(columns=[c for c in rem if c in X_test.columns])
+    else:
+        # V1: One-Hot Encoding
+        obj_cols = list(X_train.select_dtypes(include="object").columns)
+        X_train = pd.get_dummies(X_train, columns=obj_cols, drop_first=True, dtype=int)
+        X_test = pd.get_dummies(X_test, columns=obj_cols, drop_first=True, dtype=int)
+
+    X_train = X_train.reindex(columns=training_cols, fill_value=0)
+    X_test = X_test.reindex(columns=training_cols, fill_value=0)
+
     return X_train, X_test, y_train, y_test
 
 
@@ -58,11 +122,8 @@ def load_model():
 
 
 def _plotly_layout(fig, height=None):
-    """Aplica estilo oscuro consistente a todas las figuras Plotly."""
+    """Aplica márgenes y altura consistentes a todas las figuras Plotly."""
     fig.update_layout(
-        template=PLOTLY_TEMPLATE,
-        paper_bgcolor=BG_CARD,
-        plot_bgcolor=BG_CARD,
         margin=dict(l=20, r=20, t=50, b=20),
         font=dict(size=13),
         height=height,
@@ -86,6 +147,14 @@ def render_model_report():
     ])
 
     df = load_clean_data()
+    
+    # Asegurar nombres de días en español (el pipeline nuevo los genera en inglés)
+    mapa_dias = {
+        "Monday": "lunes", "Tuesday": "martes", "Wednesday": "miércoles",
+        "Thursday": "jueves", "Friday": "viernes", "Saturday": "sábado", "Sunday": "domingo"
+    }
+    if "dia_semana_creacion" in df.columns:
+        df["dia_semana_creacion"] = df["dia_semana_creacion"].replace(mapa_dias)
 
     with tab1:
         _render_data_engineering(df)
@@ -132,8 +201,8 @@ def _render_data_engineering(df):
         marker=dict(color=["#636EFA", "#636EFA", "#EF553B", "#00CC96", "#AB63FA", "#FFA15A", ACCENT]),
         connector=dict(line=dict(color="royalblue", width=1)),
     ))
-    funnel.update_layout(title="De 13,516 registros crudos a 8,422 limpios", template=PLOTLY_TEMPLATE,
-                          paper_bgcolor=BG_CARD, plot_bgcolor=BG_CARD, height=420)
+    funnel.update_layout(title="De 13,516 registros crudos a 8,422 limpios", 
+                            height=420)
     st.plotly_chart(funnel, use_container_width=True)
 
     # --- Distribución del target ---
@@ -151,7 +220,7 @@ def _render_data_engineering(df):
         ))
         fig.update_layout(
             title="Proporción Hot vs Cold",
-            template=PLOTLY_TEMPLATE, paper_bgcolor=BG_CARD, height=380,
+             height=380,
             annotations=[dict(text=f"{hot+cold:,}<br>leads", x=0.5, y=0.5,
                               font_size=18, showarrow=False)],
         )
@@ -165,7 +234,7 @@ def _render_data_engineering(df):
             textposition="outside", textfont_size=14,
         ))
         fig.update_layout(title="Conteo de leads", yaxis_title="Cantidad",
-                          template=PLOTLY_TEMPLATE, paper_bgcolor=BG_CARD, plot_bgcolor=BG_CARD, height=380)
+                           height=380)
         st.plotly_chart(fig, use_container_width=True)
 
     st.info("**Desbalance leve (69/31).** No se requieren técnicas especiales como SMOTE. Ratio Hot/Cold = 2.19:1.")
@@ -213,7 +282,7 @@ def _render_eda(df):
         fig.add_hline(y=global_rate, line_dash="dash", line_color="gray",
                       annotation_text=f"Promedio {global_rate:.1f}%", annotation_position="top left")
         fig.update_layout(title="Tasa de conversión por hora del día",
-                          xaxis_title="Hora", yaxis_title="% Hot Lead", yaxis_range=[50, 82])
+                          xaxis_title="Hora", yaxis_title="% Hot Lead", xaxis_range=[-1, 24])
         _plotly_layout(fig, 380)
         st.plotly_chart(fig, use_container_width=True)
 
@@ -230,7 +299,7 @@ def _render_eda(df):
         ))
         fig.add_hline(y=global_rate, line_dash="dash", line_color="gray")
         fig.update_layout(title="Conversión por día de semana",
-                          yaxis_title="% Hot Lead", yaxis_range=[50, 82])
+                          yaxis_title="% Hot Lead")
         _plotly_layout(fig, 380)
         st.plotly_chart(fig, use_container_width=True)
 
@@ -372,7 +441,7 @@ def _render_feature_engineering(df):
     )
     franjas = ["madrugada", "mañana", "tarde", "noche"]
     conv_franja = df_temp.groupby("franja_horaria")["target"].mean().reindex(franjas) * 100
-    vol_franja = df_temp.groupby("franja_horaria").size().reindex(franjas)
+    vol_franja = df_temp.groupby("franja_horaria").size().reindex(franjas).fillna(0)
     franja_colors = ["#9b59b6", "#f39c12", "#e74c3c", "#2c3e50"]
 
     fig = go.Figure(go.Bar(
@@ -384,7 +453,7 @@ def _render_feature_engineering(df):
     fig.add_hline(y=df["target"].mean() * 100, line_dash="dash", line_color="gray",
                   annotation_text="Promedio global")
     fig.update_layout(title="Tasa de conversión por franja horaria",
-                      yaxis_title="% Hot Lead", yaxis_range=[60, 78])
+                      yaxis_title="% Hot Lead")
     _plotly_layout(fig, 380)
     st.plotly_chart(fig, use_container_width=True)
 
@@ -524,7 +593,7 @@ def _render_modeling():
     fig.add_hline(y=cv_mean, line_dash="dash", line_color=GOLD,
                   annotation_text=f"Media = {cv_mean:.4f}")
     fig.update_layout(title="ROC-AUC por fold — Estabilidad del modelo v2",
-                      yaxis_title="ROC-AUC", yaxis_range=[0.93, 0.97])
+                      yaxis_title="ROC-AUC")
     _plotly_layout(fig, 350)
     st.plotly_chart(fig, use_container_width=True)
 
@@ -567,7 +636,7 @@ def _render_evaluation():
             ),
         ), row=1, col=i + 1)
     gauge_fig.update_layout(height=220, margin=dict(l=10, r=10, t=40, b=10),
-                             template=PLOTLY_TEMPLATE, paper_bgcolor=BG_CARD)
+                             )
     st.plotly_chart(gauge_fig, use_container_width=True)
 
     # --- Matriz de confusión ---
@@ -651,7 +720,7 @@ def _render_evaluation():
                   annotation_text=f"Seleccionado {UMBRAL}", annotation_font_color=GOLD)
     fig.update_layout(title="Métricas vs Umbral — ¿Dónde cortamos?",
                       xaxis_title="Umbral de decisión", yaxis_title="Valor de la métrica",
-                      xaxis_range=[0.1, 0.9], yaxis_range=[0.4, 1.0],
+                      xaxis_range=[0.1, 0.9],
                       legend=dict(orientation="h", y=1.12))
     _plotly_layout(fig, 420)
     st.plotly_chart(fig, use_container_width=True)

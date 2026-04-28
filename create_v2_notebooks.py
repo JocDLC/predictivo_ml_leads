@@ -21,11 +21,330 @@ def create_notebook(filename, cells_content):
 
 # --- 01 EDA ---
 eda_cells = [
+    # ── TÍTULO PRINCIPAL ─────────────────────────────────────────────────
     ('markdown', """# 01 — Exploratory Data Analysis (EDA) V2
 
+**Objetivo:** Comprender la distribución, estructura y relaciones del dataset procesado antes de construir el modelo. Este análisis guía las decisiones de feature engineering y nos permite detectar patrones comerciales en los datos de leads de 2025.
+
+**Secciones de este notebook:**
+1. Información general del dataset y estadísticas descriptivas
+2. Distribución del Target (Hot Lead vs Cold Lead)
+3. Análisis de variables temporales (Hora, Día de la semana, Mes)
+4. Análisis de variables categóricas principales
+5. Análisis temporal detallado (Heatmaps cruzados)
+6. Correlación entre variables numéricas
+7. Hallazgos clave y recomendaciones para Feature Engineering
+
 **Comparativa V1 vs V2:**
-- **Versión 1:** El análisis exploratorio se hizo sobre un dataset reducido (~8,400 registros) que mezclaba múltiples años y contenía una gran cantidad de leads procesados por un chatbot automático, lo que ensuciaba la distribución de clases.
-- **Versión 2 (Este notebook):** Analizamos el dataset depurado del año 2025 (~66,000 registros). Al excluir los leads del bot y los meses anómalos, obtenemos una visión real del comportamiento orgánico y de la tasa de conversión humana (Hot Leads vs Cold Leads)."""),
+- **Versión 1:** El análisis se hizo sobre ~8,400 registros mezclando múltiples años, con presencia de leads del chatbot que distorsionaban todas las distribuciones.
+- **Versión 2:** Analizamos ~66,000 registros depurados del año 2025. Sin chatbot, sin meses anómalos, obtenemos una visión real del comportamiento orgánico comercial."""),
+
+    ('code', """import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import warnings
+warnings.filterwarnings('ignore')
+
+sns.set_theme(style="whitegrid")
+df = pd.read_csv("../data/processed/leads_cleaned.csv")
+print(f"Dataset V2 cargado: {df.shape[0]:,} filas x {df.shape[1]} columnas")"""),
+
+    # ── 1. INFORMACIÓN GENERAL ───────────────────────────────────────────
+    ('markdown', """## 1. Información General del Dataset y Estadísticas Descriptivas
+
+Se revisa la estructura del dataset procesado: tipos de datos, valores nulos residuales y estadísticas descriptivas para variables numéricas y categóricas. Esta es la base para validar que el Data Engineering funcionó correctamente y entender el rango de valores con los que trabajará el modelo."""),
+
+    ('code', """df.info()
+print("\\nValores Nulos por Columna:")
+print(df.isnull().sum())
+print("\\n=== ESTADÍSTICAS DESCRIPTIVAS ===")
+print("\\n--- Numéricas ---")
+print(df.describe().to_string())
+print("\\n--- Categóricas ---")
+print(df.describe(include='object').to_string())"""),
+
+    ('markdown', """**Hallazgos:**
+- El dataset no debería tener valores nulos ya que fueron imputados con `'Desconocido'` en el paso anterior. Si aparecen, revisar el pipeline de Data Engineering.
+- Las variables numéricas (`hora_creacion`, `mes_creacion`, `dia_creacion`) deben mostrar rangos lógicos (0-23 para hora, 1-12 para mes, etc.).
+- Las variables categóricas con muchos valores únicos (`campana`, `concesionario`) confirman la necesidad de estrategias de encoding sofisticadas en el siguiente notebook.
+
+**Diferencias V1 vs V2:**
+La V1 tenía columnas adicionales como `anio_creacion`, `plataforma` y `subtipo_interes`. En la V2 estas fueron eliminadas durante el Data Engineering por ser de varianza cero o por riesgo de data leakage, resultando en un dataset más compacto pero más limpio para el modelado."""),
+
+    # ── 2. DISTRIBUCIÓN DEL TARGET ───────────────────────────────────────
+    ('markdown', """## 2. Distribución del Target (Hot Lead vs Cold Lead)
+
+La variable objetivo `target` es binaria: **1 = Hot Lead** (lead con intención de compra confirmada) y **0 = Cold Lead** (rechazo o sin contacto exitoso). Entender su distribución es crítico para elegir las métricas de evaluación del modelo y decidir si se requieren técnicas de balanceo de clases."""),
+
+    ('code', """fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+
+counts = df["target"].value_counts()
+bars = counts.plot(kind="bar", color=["#e74c3c", "#2ecc71"], edgecolor="black", ax=axes[0])
+axes[0].set_xticks([0, 1])
+axes[0].set_xticklabels(["Cold Lead (0)", "Hot Lead (1)"], rotation=0)
+axes[0].set_title("Conteo de Hot vs Cold Leads (V2)")
+axes[0].set_ylabel("Cantidad")
+
+total = len(df)
+for i, (val, cnt) in enumerate(counts.items()):
+    pct = cnt / total * 100
+    axes[0].text(i, cnt + total*0.01, f"{cnt:,}\\n({pct:.1f}%)", ha="center", va="bottom", fontweight="bold", fontsize=10)
+
+df["target"].value_counts().plot(kind="pie", colors=["#e74c3c", "#2ecc71"],
+                                  autopct="%1.1f%%", labels=["Cold (0)", "Hot (1)"],
+                                  startangle=90, ax=axes[1])
+axes[1].set_title("Proporción Hot vs Cold (V2)")
+axes[1].set_ylabel("")
+
+plt.tight_layout()
+plt.show()"""),
+
+    ('markdown', """**Hallazgos:**
+La distribución muestra aproximadamente **~37% Hot Leads** y **~63% Cold Leads**. Esta proporción indica:
+- Un **desbalance moderado** que es natural en cualquier embudo de ventas comercial: no todos los que muestran interés terminan comprando.
+- El 37% de clase positiva es suficiente para que los algoritmos de ML capturen los patrones de conversión **sin necesidad obligatoria de SMOTE u oversampling**.
+- Se evaluará el uso de `class_weight='balanced'` en los modelos para compensar levemente el desbalance sin distorsionar la distribución real.
+- La métrica principal de evaluación será **ROC-AUC** (resistente al desbalance), complementada con Precision-Recall y F1-Score.
+
+**Diferencias V1 vs V2:**
+En la V1, la tasa de Hot Leads era artificialmente alta (~68%) por la presencia del chatbot que procesaba leads de baja intención con cualificación rápida. Al eliminar el chatbot, la distribución en V2 refleja la **verdadera tasa de conversión del equipo comercial humano** (~37%), que es el número relevante para calibrar las expectativas del modelo en producción."""),
+
+    # ── 3. VARIABLES TEMPORALES ──────────────────────────────────────────
+    ('markdown', """## 3. Análisis de Variables Temporales
+
+Se analiza cómo el **volumen de leads** y la **tasa de conversión** varían según la hora del día, el día de la semana y el mes del año. Estas variables temporales son frecuentemente de las más predictivas en modelos de leads porque capturan la intencionalidad del usuario (quien llena un formulario a las 10 AM un martes tiene un perfil muy distinto a quien lo hace a las 2 AM un domingo)."""),
+
+    ('code', """fig, axes = plt.subplots(3, 2, figsize=(15, 15))
+plt.subplots_adjust(hspace=0.5)
+
+cols_temp = ['hora_creacion', 'dia_semana_creacion', 'mes_creacion']
+titulos = ['Hora de Creación', 'Día de la Semana', 'Mes']
+
+for i, col in enumerate(cols_temp):
+    if col not in df.columns: continue
+    
+    # Volumen
+    ax_vol = axes[i, 0]
+    order = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'] if col == 'dia_semana_creacion' else None
+    if col == 'dia_semana_creacion':
+        df['dia_semana_creacion'] = df['dia_semana_creacion'].str.capitalize()
+    sns.countplot(data=df, x=col, color='steelblue', order=order, ax=ax_vol)
+    ax_vol.set_title(f'Volumen por {titulos[i]}')
+    ax_vol.tick_params(axis='x', rotation=45)
+    
+    # Porcentajes Volumen
+    total = len(df)
+    for p in ax_vol.patches:
+        height = p.get_height()
+        if pd.isna(height): height = 0
+        percentage = f'{100 * height / total:.1f}%'
+        x = p.get_x() + p.get_width() / 2
+        y = height
+        if height > 0:
+            ax_vol.annotate(percentage, (x, y), ha='center', va='bottom', fontsize=9)
+        
+    # Tasa de conversión
+    ax_conv = axes[i, 1]
+    conv = df.groupby(col)['target'].mean().reset_index()
+    sns.barplot(data=conv, x=col, y='target', color='seagreen', order=order, ax=ax_conv)
+    ax_conv.set_title(f'Tasa de Conversión por {titulos[i]}')
+    ax_conv.axhline(df['target'].mean(), color='red', linestyle='--', label='Media Global')
+    ax_conv.tick_params(axis='x', rotation=45)
+    ax_conv.legend()
+    
+    # Porcentajes Conversión
+    for p in ax_conv.patches:
+        val = p.get_height()
+        percentage = f'{val*100:.1f}%'
+        x = p.get_x() + p.get_width() / 2
+        y = p.get_height()
+        if p.get_height() > 0:
+            ax_conv.annotate(percentage, (x, y), ha='center', va='bottom', fontsize=9)
+
+plt.show()"""),
+
+    ('markdown', """**Hallazgos por variable temporal:**
+
+**Por Hora:**
+El volumen de leads sigue una curva de campana que pica en horario comercial (10 AM – 5 PM), lo cual coincide con la actividad normal de un cliente buscando un vehículo. La tasa de conversión, sin embargo, se mantiene relativamente estable a lo largo del día, indicando que **la hora no es un predictor lineal fuerte de conversión** por sí sola (aunque sí lo es en combinación con el día, como veremos en los Heatmaps).
+
+**Por Día de la Semana:**
+El volumen cae drásticamente los sábados y domingos (los concesionarios tienen menor atención). Sin embargo, la tasa de conversión de los leads que sí llegan los fines de semana es equiparable o incluso ligeramente superior a los días laborables. Esto indica que **el lead de fin de semana tiene alta intención de compra**: si está llenando un formulario el domingo, es porque tiene un interés genuino.
+
+**Por Mes:**
+Los meses excluidos (Abril, Mayo, Junio) no aparecen, confirmando el filtro del Data Engineering. Los meses visibles muestran el volumen operativo real de la flota comercial a lo largo del año 2025.
+
+**Diferencias V1 vs V2:**
+En la V1, la extracción de hora se hacía sobre `Fecha de creación` (timestamp del sistema), haciendo que la mayoría de los leads mostraran hora 00:00. Esto ocultaba completamente los patrones horarios. En la V2, usando `Fecha de creación por el cliente`, recuperamos la distribución horaria real. La gráfica de día de la semana también cambia drásticamente: en la V1 el chatbot operaba los 7 días de forma uniforme, desdibujando la caída natural de los fines de semana."""),
+
+    # ── 4. VARIABLES CATEGÓRICAS ─────────────────────────────────────────
+    ('markdown', """## 4. Análisis de Variables Categóricas Principales
+
+Se analizan las variables categóricas con mayor poder discriminativo para la conversión: **origen del lead, campaña de marketing, concesionario asignado y formulario de captación**. Para cada una se muestra el Top 10 por volumen (izquierda) y la tasa de conversión de cada categoría (derecha), con la línea roja indicando la media global (~37%)."""),
+
+    ('code', """variables_cat = ['origen', 'campana', 'concesionario', 'nombre_formulario']
+for col in variables_cat:
+    if col not in df.columns: continue
+    
+    # Truncar nombres muy largos para que se vean en los gráficos
+    df[col] = df[col].astype(str).apply(lambda x: x[:30] + '...' if len(x) > 30 else x)
+    
+    top_10 = df[col].value_counts().nlargest(10).index
+    df_top = df[df[col].isin(top_10)]
+    
+    fig, axes = plt.subplots(1, 2, figsize=(15, 4))
+    plt.subplots_adjust(wspace=0.3, left=0.15)
+    
+    # Volumen
+    sns.countplot(data=df_top, y=col, order=top_10, color='steelblue', ax=axes[0])
+    axes[0].set_title(f'Top 10 Volumen por {col}')
+    
+    # Tasa de Conversión
+    conv = df_top.groupby(col)['target'].mean().reindex(top_10).reset_index()
+    sns.barplot(data=conv, y=col, x='target', color='seagreen', ax=axes[1])
+    axes[1].set_title(f'Tasa de Conversión por {col}')
+    axes[1].axvline(df['target'].mean(), color='red', linestyle='--', label='Media Global')
+    
+    total = len(df)
+    for p in axes[0].patches:
+        width = p.get_width()
+        if np.isnan(width): width = 0
+        percentage = f'{100 * width / total:.1f}%'
+        x = width
+        y = p.get_y() + p.get_height() / 2
+        axes[0].annotate(percentage, (x, y), ha='left', va='center', fontsize=9)
+
+    for p in axes[1].patches:
+        val = p.get_width()
+        if np.isnan(val): val = 0
+        percentage = f'{val*100:.1f}%'
+        x = val
+        y = p.get_y() + p.get_height() / 2
+        axes[1].annotate(percentage, (x, y), ha='left', va='center', fontsize=9)
+
+    plt.tight_layout()
+    plt.show()"""),
+
+    ('markdown', """**Hallazgos por variable categórica:**
+
+**Origen del lead:**
+Los orígenes con mayor volumen (como formularios de la web o landing pages) no siempre son los de mayor conversión. Orígenes de nicho o especializados (como referidos o eventos) suelen tener tasas de conversión muy superiores a la media.
+
+**Campaña:**
+Se observa el fenómeno clásico de Marketing digital: pocas campañas concentran la mayoría del volumen, pero con tasas de conversión bajas (tráfico masivo y frío). Otras campañas más específicas tienen volumen reducido pero una conversión sobresaliente. El modelo deberá capturar esta relación no lineal entre campaña y conversión.
+
+**Concesionario:**
+Las tasas de conversión varían significativamente entre concesionarios, reflejando diferencias en la eficiencia del equipo de ventas, la zona geográfica y el tipo de producto que comercializan.
+
+**Nombre del formulario:**
+Los formularios de captura tienen perfiles de calidad muy distintos: formularios de comparación de precios o configuradores generan leads de alta conversión, mientras que formularios de suscripción o brochures atraen leads más exploratorios.
+
+**Diferencias V1 vs V2:**
+En la V1, la variable `plataforma` mostraba en esta sección que el chatbot era responsable de un enorme volumen con conversión casi nula, "revelando" el bot al modelo como una señal de baja calidad. Al eliminarlo en V2, el análisis de categorías muestra únicamente el comportamiento humano, y variables como `campana` y `concesionario` emergen con mayor fuerza predictiva real. Además, en V1 se usaba One-Hot Encoding generando decenas de columnas. En V2 usaremos Target Encoding con Bayesian Smoothing para capturar estas relaciones de forma densa y sin explosión de dimensionalidad."""),
+
+    # ── 5. HEATMAPS ──────────────────────────────────────────────────────
+    ('markdown', """## 5. Análisis Temporal Detallado (Heatmaps)
+
+Los heatmaps cruzados permiten visualizar simultáneamente **dos dimensiones temporales** (día de la semana vs. hora del día) para descubrir patrones que no son visibles en los gráficos simples por separado. Se generan dos heatmaps:
+1. **Volumen de leads** por combinación día-hora (¿cuándo llegan más leads?)
+2. **Tasa de conversión** por combinación día-hora (¿cuándo convierten mejor?)
+
+La comparación entre ambos es la clave: un bloque con alto volumen pero baja conversión es tráfico frío; un bloque con poco volumen pero alta conversión es tráfico caliente muy valioso."""),
+
+    ('code', """pivot_vol = df.pivot_table(index='dia_semana_creacion', columns='hora_creacion', values='target', aggfunc='count', fill_value=0)
+pivot_conv = df.pivot_table(index='dia_semana_creacion', columns='hora_creacion', values='target', aggfunc='mean', fill_value=0)
+
+dias_orden = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+pivot_vol = pivot_vol.reindex(dias_orden)
+pivot_conv = pivot_conv.reindex(dias_orden)
+
+fig, axes = plt.subplots(2, 1, figsize=(16, 12))
+
+sns.heatmap(pivot_vol, cmap="YlGnBu", annot=False, ax=axes[0])
+axes[0].set_title("Mapa de Calor: Volumen de Leads por Día y Hora")
+axes[0].set_xlabel("Hora del Día")
+axes[0].set_ylabel("Día de la Semana")
+
+sns.heatmap(pivot_conv, cmap="YlOrRd", annot=False, ax=axes[1])
+axes[1].set_title("Mapa de Calor: Tasa de Conversión por Día y Hora")
+axes[1].set_xlabel("Hora del Día")
+axes[1].set_ylabel("Día de la Semana")
+
+plt.tight_layout()
+plt.show()"""),
+
+    ('markdown', """**Hallazgos del Heatmap de Volumen:**
+El mapa azul muestra clústeres oscuros muy marcados de **Lunes a Viernes entre las 9:00 y las 19:00 horas**, que corresponde al horario operativo de los concesionarios. Los fines de semana presentan un volumen considerablemente menor pero no nulo, reflejando que algunos clientes investigan activamente durante su tiempo libre. La madrugada (0-7 AM) es prácticamente nula para todos los días, lo cual confirma que los leads de chatbot (que sí aparecían en estas franjas) han sido correctamente eliminados.
+
+**Hallazgos del Heatmap de Conversión:**
+El mapa rojo revela algo estratégicamente valioso: **los picos de conversión no se alinean perfectamente con los picos de volumen**. Existen franjas horarias específicas (generalmente primeras horas de la mañana o tarde-noche) donde, aunque el volumen de leads es menor, la tasa de conversión es notablemente superior. Esto sugiere que los leads que contactan fuera del horario pico tienen mayor intención de compra, posiblemente porque han investigado más antes de contactar.
+
+**Diferencias V1 vs V2:**
+En la V1, los heatmaps estaban completamente distorsionados: el chatbot operaba en lotes nocturnos, creando franjas de alta densidad artificiales en horas imposibles (2-5 AM). Además, la extracción incorrecta de la hora sobre la columna del sistema hacía que la mayoría de los registros cayeran en la hora 0, generando una columna vertical de madrugada sin sentido comercial. En la V2, ambos problemas están corregidos, y el heatmap refleja la realidad operativa del negocio."""),
+
+    # ── 6. CORRELACIÓN ───────────────────────────────────────────────────
+    ('markdown', """## 6. Correlación entre Variables Numéricas
+
+La matriz de correlación mide la **relación lineal** entre las variables numéricas del dataset y con la variable objetivo `target`. Es útil para detectar features redundantes (alta correlación entre sí) y para entender qué variables tienen alguna relación lineal directa con la conversión.
+
+> ⚠️ **Nota:** Una correlación lineal baja no significa que la variable sea inútil. Los modelos de árboles (como XGBoost o LightGBM) pueden capturar relaciones no lineales complejas que la correlación de Pearson no detecta."""),
+
+    ('code', """num_cols = df.select_dtypes(include=['int64', 'float64']).columns
+plt.figure(figsize=(10, 8))
+sns.heatmap(df[num_cols].corr(), annot=True, cmap='coolwarm', fmt=".2f", linewidths=0.5)
+plt.title("Matriz de Correlación - Features Numéricas")
+plt.tight_layout()
+plt.show()"""),
+
+    ('markdown', """**Hallazgos de la Matriz de Correlación:**
+Al analizar la relación de las variables temporales numéricas con el Target (1=Hot, 0=Cold):
+- **`mes_creacion` (~-0.20):** Correlación negativa leve. Los meses iniciales del año tienen mayor tasa de conversión, que decrece ligeramente hacia finales de año. Puede estar relacionado con ciclos de ventas automotrices (inicio de año, renovación de flota).
+- **`dia_creacion` (~0.14):** Correlación positiva leve. Leads hacia finales de mes tienen marginalmente mayor conversión, posiblemente relacionado con cierres de quincena o mes del equipo comercial.
+- **`hora_creacion` (~0.00):** Sin correlación lineal significativa. Esto es esperado: la hora importa, pero de forma no lineal (ciertos bloques horarios son mejores, no hay una tendencia lineal creciente o decreciente). Los árboles de decisión capturarán esto perfectamente.
+- **Entre variables numéricas:** Las variables temporales no están correlacionadas entre sí, lo que es ideal: cada una aporta información independiente al modelo.
+
+**Diferencias V1 vs V2:**
+En la V1, la variable `anio_creacion` mostraba correlación porque los datos mezclaban 2022, 2023 y 2024, años con tasas de conversión distintas por cambios en el proceso de ventas. Al filtrar solo 2025, eliminamos esa pseudo-correlación espuria. Además, `hora_creacion` ahora muestra valores distribuidos (0-23) en lugar de estar concentrada en 0, lo que recupera su capacidad predictiva en el modelo."""),
+
+    # ── 7. HALLAZGOS FINALES ─────────────────────────────────────────────
+    ('markdown', """## 7. Hallazgos Clave del EDA y Recomendaciones para Feature Engineering
+
+---
+### Resumen de Hallazgos
+
+**1. TARGET**
+- Distribución real: ~37% Hot Leads / ~63% Cold Leads (sin sesgo de chatbot)
+- Desbalance moderado: no requiere SMOTE obligatorio; usar `class_weight='balanced'`
+- Métrica principal recomendada: ROC-AUC, complementada con F1-Score
+
+**2. FEATURES TEMPORALES**
+- `hora_creacion`: ahora refleja horas reales (no 00:00). Relación no lineal con conversión → usar modelos de árbol
+- `dia_semana_creacion`: fines de semana tienen menor volumen pero igual tasa de conversión
+- `mes_creacion`: ligera tendencia estacional; meses iniciales con mayor conversión
+
+**3. FEATURES CATEGÓRICAS**
+- Alta cardinalidad en `campana`, `concesionario`, `nombre_formulario`: One-Hot Encoding causaría explosión de dimensionalidad
+- Relación no lineal entre volumen y conversión: categorías con alto volumen no siempre convierten mejor
+- Estrategia recomendada: **Target Encoding con Bayesian Smoothing** para todas las categóricas de alta cardinalidad
+
+---
+### Recomendaciones para Feature Engineering (Notebook 02)
+
+| Acción | Variable(s) | Motivo |
+|--------|------------|--------|
+| Eliminar | `subtipo_interes` | Columna completada post-llamada (data leakage) |
+| Crear | `es_fin_de_semana` | Captura el comportamiento diferencial del lead de fin de semana |
+| Crear | `franja_horaria` | Agrupa horas en bloques comerciales (madrugada/mañana/tarde/noche) |
+| Target Encode | `campana`, `concesionario`, `origen`, `nombre_formulario` | Alta cardinalidad; Bayesian Smoothing evita sobreajuste |
+| Conservar | `hora_creacion`, `mes_creacion`, `dia_creacion` | Relación no lineal capturable por árboles |
+""")
+]
+
+
+# --- 02 Feature Engineering ---
+fe_cells = [
+
     ('code', """import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
