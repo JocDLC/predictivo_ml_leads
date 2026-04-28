@@ -69,7 +69,8 @@ axes[1].set_ylabel("")
 
 plt.tight_layout()
 plt.show()"""),
-    ('markdown', """**Diferencias V1 vs V2 - Distribución del Target:**\\nEn la versión 1, debido a un dataset reducido y la presencia masiva de bots, la tasa de conversión mostraba un sesgo irrealmente alto cercano al 68%. En esta versión 2 (al limpiar meses anómalos y bots), la distribución refleja la **verdadera tasa de conversión orgánica** que ronda el 37%. Esta base sin sesgar es fundamental para no sobreestimar la capacidad predictiva de los modelos y reflejar las proporciones reales de ventas."""),
+    ('markdown', """**Diferencias V1 vs V2 - Distribución del Target:**
+En la versión 1, debido a un dataset reducido y la presencia masiva de bots, la tasa de conversión mostraba un sesgo irrealmente alto cercano al 68%. En esta versión 2 (al limpiar meses anómalos y bots), la distribución refleja la **verdadera tasa de conversión orgánica** que ronda el 37%. Esta base sin sesgar es fundamental para no sobreestimar la capacidad predictiva de los modelos y reflejar las proporciones reales de ventas."""),
     ('markdown', """## Análisis de Variables Temporales
 Distribución y Tasa de Conversión (Hot Leads) por Hora, Día de la Semana y Mes.
 Este análisis reemplaza las gráficas de V1, ahora sobre datos puros de 2025 sin bots."""),
@@ -167,7 +168,10 @@ for col in variables_cat:
 
     plt.tight_layout()
     plt.show()"""),
-    ('markdown', """**Diferencias V1 vs V2 - Variables Categóricas:**\\nEn la versión 1 existía la variable `plataforma` que generaba un sesgo enorme porque diferenciaba a los bots de los humanos. Como en la V2 eliminamos por completo a los bots desde la fase de Data Engineering, la plataforma quedó con varianza cero (todos son humanos procesados por MX_LEAD_QUALIF), por lo que fue **eliminada** del análisis.\\nAdemás, vemos una dispersión muy grande en campañas y orígenes. En V1 esto se transformó con One-Hot Encoding generando decenas de columnas ruidosas. En V2 usaremos Target Encoding (Suavizado Bayesiano) para aprovechar la alta cardinalidad sin explotar la cantidad de columnas del modelo."""),
+    ('markdown', """**Diferencias V1 vs V2 - Variables Categóricas:**
+En la versión 1 existía la variable `plataforma` que generaba un sesgo enorme porque diferenciaba a los bots de los humanos. Como en la V2 eliminamos por completo a los bots desde la fase de Data Engineering, la plataforma quedó con varianza cero (todos son humanos procesados por MX_LEAD_QUALIF), por lo que fue **eliminada** del análisis.
+
+Además, vemos una dispersión muy grande en campañas y orígenes. En V1 esto se transformó con One-Hot Encoding generando decenas de columnas ruidosas. En V2 usaremos Target Encoding (Suavizado Bayesiano) para aprovechar la alta cardinalidad sin explotar la cantidad de columnas del modelo."""),
     ('markdown', """## Análisis Temporal Detallado (Heatmaps)
 Visualización de volumen y tasa de conversión cruzando Día de la Semana y Hora de Creación."""),
     ('code', """pivot_vol = df.pivot_table(index='dia_semana_creacion', columns='hora_creacion', values='target', aggfunc='count', fill_value=0)
@@ -191,18 +195,27 @@ axes[1].set_ylabel("Día de la Semana")
 
 plt.tight_layout()
 plt.show()"""),
-    ('markdown', """**Diferencias V1 vs V2 - Mapas de Calor Temporales:**\\nEn la V1 los mapas de calor estaban gravemente distorsionados porque la extracción original perdía la hora real y los bots procesaban en lotes masivos. Tras corregir la extracción y limpiar los bots en V2, **el mapa de calor recupera su lógica comercial**: observamos clústeres de volumen claros en días y horarios laborables de alto contacto orgánico."""),
-    ('markdown', """## Correlación entre Variables Numéricas\\n\\nAnálisis de la relación lineal entre las variables numéricas y nuestra variable objetivo (Target). Esto nos permite identificar si existe alguna característica temporal que tenga un peso fuerte por sí sola sobre la conversión."""),
+    ('markdown', """**Diferencias V1 vs V2 - Mapas de Calor Temporales:**
+En la V1 los mapas de calor estaban gravemente distorsionados porque la extracción original perdía la hora real y los bots procesaban en lotes masivos. Tras corregir la extracción y limpiar los bots en V2, **el mapa de calor recupera su lógica comercial**: observamos clústeres de volumen claros en días y horarios laborables de alto contacto orgánico."""),
+    ('markdown', """## Correlación entre Variables Numéricas
+
+Análisis de la relación lineal entre las variables numéricas y nuestra variable objetivo (Target). Esto nos permite identificar si existe alguna característica temporal que tenga un peso fuerte por sí sola sobre la conversión."""),
     ('code', """num_cols = df.select_dtypes(include=['int64', 'float64']).columns
 plt.figure(figsize=(10, 8))
 sns.heatmap(df[num_cols].corr(), annot=True, cmap='coolwarm', fmt=".2f", linewidths=0.5)
 plt.title("Matriz de Correlación - Features Numéricas")
 plt.tight_layout()
 plt.show()"""),
-    ('markdown', """**Resultados de la Matriz de Correlación:**\\nAl analizar la relación de las variables temporales numéricas con el Target (1=Hot, 0=Cold), observamos que:\\n- **`mes_creacion` (-0.20):** Existe una ligera correlación negativa, lo cual indica que en los meses iniciales hay mayor conversión y a medida que avanzan los meses la tasa tiende a disminuir ligeramente.\\n- **`dia_creacion` (0.14):** Existe una leve correlación positiva, sugiriendo un aumento menor en la conversión hacia finales de mes.\\n- **`hora_creacion` (~0.00):** No existe una relación *lineal* fuerte entre la hora aislada y la conversión, lo cual tiene sentido ya que la conversión tiene picos en ciertos horarios laborables (relación no lineal), requiriendo modelos basados en árboles para capturar esta complejidad.
+    ('markdown', """**Resultados de la Matriz de Correlación:**
+Al analizar la relación de las variables temporales numéricas con el Target (1=Hot, 0=Cold), observamos que:
+- **`mes_creacion` (-0.20):** Existe una ligera correlación negativa, lo cual indica que en los meses iniciales hay mayor conversión y a medida que avanzan los meses la tasa tiende a disminuir ligeramente.
+- **`dia_creacion` (0.14):** Existe una leve correlación positiva, sugiriendo un aumento menor en la conversión hacia finales de mes.
+- **`hora_creacion` (~0.00):** No existe una relación *lineal* fuerte entre la hora aislada y la conversión, lo cual tiene sentido ya que la conversión tiene picos en ciertos horarios laborables (relación no lineal), requiriendo modelos basados en árboles para capturar esta complejidad.
 
 ---
-**Diferencias V1 vs V2 - Matriz de Correlación Numérica:**\\nEn V1, la variable `anio_creacion` mostraba correlación porque los datos históricos mezclaban varios años. En esta V2, hemos eliminado `anio_creacion` porque filtramos estrictamente el dataset al 2025, lo cual vuelve su varianza cero (no aporta valor predictivo).\\nAdemás, `hora_creacion` ahora refleja correctamente la hora de extracción sin la contaminación del chatbot (el cual generaba que todas las horas estuvieran centralizadas artificialmente o con nulos)."""),
+**Diferencias V1 vs V2 - Matriz de Correlación Numérica:**
+En V1, la variable `anio_creacion` mostraba correlación porque los datos históricos mezclaban varios años. En esta V2, hemos eliminado `anio_creacion` porque filtramos estrictamente el dataset al 2025, lo cual vuelve su varianza cero (no aporta valor predictivo).
+Además, `hora_creacion` ahora refleja correctamente la hora de extracción sin la contaminación del chatbot (el cual generaba que todas las horas estuvieran centralizadas artificialmente o con nulos)."""),
     ('markdown', """## Hallazgos Clave del EDA y Recomendaciones
 
 ================================================================================
