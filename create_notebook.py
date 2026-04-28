@@ -52,9 +52,9 @@ if len(df_raw.columns) == len(cols_corrected):
     df_raw.columns = cols_corrected
 
 print(f"Dataset cargado: {df_raw.shape[0]:,} filas x {df_raw.shape[1]} columnas")
-print("\nInformación del dataset:")
+print("\\nInformación del dataset:")
 df_raw.info()
-print("\nPrimeras 3 filas:")
+print("\\nPrimeras 3 filas:")
 display(df_raw.head(3))"""),
 
     nbf.v4.new_markdown_cell("## 3. Renombrar columnas a snake_case y crear fechas"),
@@ -65,7 +65,12 @@ df_raw["Año creación"] = df_raw["fecha_dt"].dt.year
 df_raw["Mes creación"] = df_raw["fecha_dt"].dt.month
 df_raw["Día creación"] = df_raw["fecha_dt"].dt.day
 df_raw["Hora creación"] = df_raw["fecha_dt"].dt.hour
-df_raw["Día de Semana creación"] = df_raw["fecha_dt"].dt.day_name()
+
+mapa_dias = {
+    "Monday": "lunes", "Tuesday": "martes", "Wednesday": "miércoles",
+    "Thursday": "jueves", "Friday": "viernes", "Saturday": "sábado", "Sunday": "domingo"
+}
+df_raw["Día de Semana creación"] = df_raw["fecha_dt"].dt.day_name().map(mapa_dias)
 
 RENAME_MAP = {
     "Año creación":                              "anio_creacion",
@@ -154,7 +159,10 @@ for p in ax.patches:
 plt.tight_layout()
 plt.show()"""),
 
-    nbf.v4.new_markdown_cell("## 8. Eliminar columnas con data leakage y sin valor\\n\\n**Diferencias con V1:**\\nEn esta V2 eliminamos directamente `anio_creacion` (ya que al filtrar solo por 2025 su varianza es 0) y `plataforma` (ya que al eliminar el CHATBOT, el 100% de los leads provienen de `MX_LEAD_QUALIF`, volviendo a la variable inútil). Conservaremos el resto de características que existen ANTES de la llamada."),
+    nbf.v4.new_markdown_cell("""## 8. Eliminar columnas con data leakage y sin valor
+
+**Diferencias con V1:**
+En esta V2 eliminamos directamente `anio_creacion` (ya que al filtrar solo por 2025 su varianza es 0) y `plataforma` (ya que al eliminar el CHATBOT, el 100% de los leads provienen de `MX_LEAD_QUALIF`, volviendo a la variable inútil). Conservaremos el resto de características que existen ANTES de la llamada."""),
 
     nbf.v4.new_code_cell("""COLS_LEAKAGE = [
     "sub_cualificacion", "otra_informacion", "comentario", "descripcion", 
