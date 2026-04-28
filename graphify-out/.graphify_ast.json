@@ -1,0 +1,2676 @@
+{
+  "nodes": [
+    {
+      "id": "create_notebook_py",
+      "label": "create_notebook.py",
+      "file_type": "code",
+      "source_file": "create_notebook.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "create_v2_notebooks_py",
+      "label": "create_v2_notebooks.py",
+      "file_type": "code",
+      "source_file": "create_v2_notebooks.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "predictivo_ml_leads_create_v2_notebooks_create_notebook",
+      "label": "create_notebook()",
+      "file_type": "code",
+      "source_file": "create_v2_notebooks.py",
+      "source_location": "L4"
+    },
+    {
+      "id": "prueba_py",
+      "label": "prueba.py",
+      "file_type": "code",
+      "source_file": "prueba.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "prueba_bot_py",
+      "label": "prueba_bot.py",
+      "file_type": "code",
+      "source_file": "prueba_bot.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "prueba_kwid_py",
+      "label": "prueba_kwid.py",
+      "file_type": "code",
+      "source_file": "prueba_kwid.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "update_00_notebook_py",
+      "label": "update_00_notebook.py",
+      "file_type": "code",
+      "source_file": "update_00_notebook.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "scripts_compare_v1_v2_py",
+      "label": "compare_v1_v2.py",
+      "file_type": "code",
+      "source_file": "scripts\\compare_v1_v2.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "scripts_compare_v1_v2_rationale_1",
+      "label": "Compare OLD model (v1, one-hot) vs NEW model (v2, contribution + bayesian).",
+      "file_type": "rationale",
+      "source_file": "scripts\\compare_v1_v2.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_data_engineering_2025_py",
+      "label": "data_engineering_2025.py",
+      "file_type": "code",
+      "source_file": "src\\data_engineering_2025.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_data_engineering_2025_main",
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "src\\data_engineering_2025.py",
+      "source_location": "L57"
+    },
+    {
+      "id": "src_predict_py",
+      "label": "predict.py",
+      "file_type": "code",
+      "source_file": "src\\predict.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_predict_fix_encoding",
+      "label": "fix_encoding()",
+      "file_type": "code",
+      "source_file": "src\\predict.py",
+      "source_location": "L46"
+    },
+    {
+      "id": "src_predict_clasificar_franja",
+      "label": "clasificar_franja()",
+      "file_type": "code",
+      "source_file": "src\\predict.py",
+      "source_location": "L54"
+    },
+    {
+      "id": "src_predict_find_column",
+      "label": "find_column()",
+      "file_type": "code",
+      "source_file": "src\\predict.py",
+      "source_location": "L65"
+    },
+    {
+      "id": "src_predict_read_excel",
+      "label": "read_excel()",
+      "file_type": "code",
+      "source_file": "src\\predict.py",
+      "source_location": "L79"
+    },
+    {
+      "id": "src_predict_extract_date_features",
+      "label": "extract_date_features()",
+      "file_type": "code",
+      "source_file": "src\\predict.py",
+      "source_location": "L87"
+    },
+    {
+      "id": "src_predict_select_columns",
+      "label": "select_columns()",
+      "file_type": "code",
+      "source_file": "src\\predict.py",
+      "source_location": "L117"
+    },
+    {
+      "id": "src_predict_clean_nulls",
+      "label": "clean_nulls()",
+      "file_type": "code",
+      "source_file": "src\\predict.py",
+      "source_location": "L165"
+    },
+    {
+      "id": "src_predict_apply_feature_engineering",
+      "label": "apply_feature_engineering()",
+      "file_type": "code",
+      "source_file": "src\\predict.py",
+      "source_location": "L186"
+    },
+    {
+      "id": "src_predict_predict",
+      "label": "predict()",
+      "file_type": "code",
+      "source_file": "src\\predict.py",
+      "source_location": "L228"
+    },
+    {
+      "id": "src_predict_rationale_1",
+      "label": "Predicci\u00f3n de Hot/Cold Leads a partir de un archivo Excel de Salesforce.  Uso:",
+      "file_type": "rationale",
+      "source_file": "src\\predict.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_predict_rationale_47",
+      "label": "Corrige encoding latino corrupto en nombres de columna.",
+      "file_type": "rationale",
+      "source_file": "src\\predict.py",
+      "source_location": "L47"
+    },
+    {
+      "id": "src_predict_rationale_55",
+      "label": "Clasifica hora en franja horaria.",
+      "file_type": "rationale",
+      "source_file": "src\\predict.py",
+      "source_location": "L55"
+    },
+    {
+      "id": "src_predict_rationale_66",
+      "label": "Busca una columna por palabras clave (case-insensitive).",
+      "file_type": "rationale",
+      "source_file": "src\\predict.py",
+      "source_location": "L66"
+    },
+    {
+      "id": "src_predict_rationale_80",
+      "label": "Lee el Excel de Salesforce y corrige encoding de columnas.",
+      "file_type": "rationale",
+      "source_file": "src\\predict.py",
+      "source_location": "L80"
+    },
+    {
+      "id": "src_predict_rationale_88",
+      "label": "Extrae mes, d\u00eda, hora y d\u00eda de semana desde 'Fecha de creaci\u00f3n'.",
+      "file_type": "rationale",
+      "source_file": "src\\predict.py",
+      "source_location": "L88"
+    },
+    {
+      "id": "src_predict_rationale_118",
+      "label": "Selecciona y renombra las columnas necesarias para el modelo.",
+      "file_type": "rationale",
+      "source_file": "src\\predict.py",
+      "source_location": "L118"
+    },
+    {
+      "id": "src_predict_rationale_166",
+      "label": "Imputa valores nulos con reglas de negocio.",
+      "file_type": "rationale",
+      "source_file": "src\\predict.py",
+      "source_location": "L166"
+    },
+    {
+      "id": "src_predict_rationale_187",
+      "label": "Aplica feature engineering: derivadas, agrupaci\u00f3n, encoding.",
+      "file_type": "rationale",
+      "source_file": "src\\predict.py",
+      "source_location": "L187"
+    },
+    {
+      "id": "src_predict_rationale_229",
+      "label": "Pipeline completo: Excel crudo \u2192 predicciones.",
+      "file_type": "rationale",
+      "source_file": "src\\predict.py",
+      "source_location": "L229"
+    },
+    {
+      "id": "src_save_artifacts_py",
+      "label": "save_artifacts.py",
+      "file_type": "code",
+      "source_file": "src\\save_artifacts.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_save_artifacts_main",
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "src\\save_artifacts.py",
+      "source_location": "L38"
+    },
+    {
+      "id": "src_save_artifacts_clasificar_franja",
+      "label": "clasificar_franja()",
+      "file_type": "code",
+      "source_file": "src\\save_artifacts.py",
+      "source_location": "L122"
+    },
+    {
+      "id": "src_save_artifacts_rationale_1",
+      "label": "Guarda los artefactos de preprocesamiento necesarios para inferencia. Ejecutar",
+      "file_type": "rationale",
+      "source_file": "src\\save_artifacts.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_train_py",
+      "label": "train.py",
+      "file_type": "code",
+      "source_file": "src\\train.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_train_main",
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "src\\train.py",
+      "source_location": "L22"
+    },
+    {
+      "id": "src_train_rationale_1",
+      "label": "Script para entrenar y guardar el modelo predictivo (v2). Uso: python src/train",
+      "file_type": "rationale",
+      "source_file": "src\\train.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "streamlit_app_app_py",
+      "label": "app.py",
+      "file_type": "code",
+      "source_file": "streamlit_app\\app.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "streamlit_app_app_rationale_1",
+      "label": "Predictivo ML Leads \u2014 Interfaz de predicci\u00f3n de Hot/Cold Leads.  Ejecutar:",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\app.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "streamlit_app_components_history_py",
+      "label": "history.py",
+      "file_type": "code",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "components_history_render_trend_chart",
+      "label": "render_trend_chart()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L14"
+    },
+    {
+      "id": "components_history_render_sessions_table",
+      "label": "render_sessions_table()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L29"
+    },
+    {
+      "id": "components_history_render_session_detail",
+      "label": "render_session_detail()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L77"
+    },
+    {
+      "id": "components_history_render_history_page",
+      "label": "render_history_page()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L150"
+    },
+    {
+      "id": "components_history_rationale_1",
+      "label": "Componente de historial de sesiones \u2014 Sistema de memoria SQLite.  Renderiza el",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "components_history_rationale_15",
+      "label": "Renderiza gr\u00e1fico de % Hot leads a lo largo del tiempo.",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L15"
+    },
+    {
+      "id": "components_history_rationale_30",
+      "label": "Renderiza la tabla de sesiones hist\u00f3ricas.      Returns:         session_id s",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L30"
+    },
+    {
+      "id": "components_history_rationale_78",
+      "label": "Permite seleccionar una sesi\u00f3n y ver sus predicciones.",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L78"
+    },
+    {
+      "id": "components_history_rationale_151",
+      "label": "P\u00e1gina completa del historial de sesiones.",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L151"
+    },
+    {
+      "id": "streamlit_app_components_lead_detail_py",
+      "label": "lead_detail.py",
+      "file_type": "code",
+      "source_file": "streamlit_app\\components\\lead_detail.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "components_lead_detail_render_lead_selector",
+      "label": "render_lead_selector()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\components\\lead_detail.py",
+      "source_location": "L9"
+    },
+    {
+      "id": "components_lead_detail_render_lead_detail",
+      "label": "render_lead_detail()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\components\\lead_detail.py",
+      "source_location": "L80"
+    },
+    {
+      "id": "components_lead_detail_render_shap_chart",
+      "label": "render_shap_chart()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\components\\lead_detail.py",
+      "source_location": "L143"
+    },
+    {
+      "id": "components_lead_detail_rationale_1",
+      "label": "Componente de detalle individual con explicaci\u00f3n SHAP.",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\components\\lead_detail.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "components_lead_detail_rationale_10",
+      "label": "Permite seleccionar un lead por b\u00fasqueda de ID (todos) o dropdown (filtrados).",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\components\\lead_detail.py",
+      "source_location": "L10"
+    },
+    {
+      "id": "components_lead_detail_rationale_81",
+      "label": "Renderiza el detalle de un lead con explicaci\u00f3n SHAP.",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\components\\lead_detail.py",
+      "source_location": "L81"
+    },
+    {
+      "id": "components_lead_detail_rationale_144",
+      "label": "Renderiza gr\u00e1fico de barras horizontal con impactos SHAP estilo UI moderna.",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\components\\lead_detail.py",
+      "source_location": "L144"
+    },
+    {
+      "id": "streamlit_app_components_model_report_py",
+      "label": "model_report.py",
+      "file_type": "code",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "components_model_report_load_clean_data",
+      "label": "load_clean_data()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L42"
+    },
+    {
+      "id": "components_model_report_load_train_test",
+      "label": "load_train_test()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L47"
+    },
+    {
+      "id": "components_model_report_load_model",
+      "label": "load_model()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L120"
+    },
+    {
+      "id": "components_model_report_plotly_layout",
+      "label": "_plotly_layout()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L124"
+    },
+    {
+      "id": "components_model_report_render_model_report",
+      "label": "render_model_report()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L137"
+    },
+    {
+      "id": "components_model_report_render_data_engineering",
+      "label": "_render_data_engineering()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L180"
+    },
+    {
+      "id": "components_model_report_render_eda",
+      "label": "_render_eda()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L261"
+    },
+    {
+      "id": "components_model_report_render_feature_engineering",
+      "label": "_render_feature_engineering()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L403"
+    },
+    {
+      "id": "components_model_report_render_modeling",
+      "label": "_render_modeling()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L494"
+    },
+    {
+      "id": "components_model_report_render_evaluation",
+      "label": "_render_evaluation()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L608"
+    },
+    {
+      "id": "components_model_report_rationale_1",
+      "label": "Reporte completo del modelo predictivo \u2014 gr\u00e1ficas interactivas y conclusiones.",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "components_model_report_rationale_48",
+      "label": "Regenera X_train/X_test aplicando el pipeline V2 desde leads_cleaned.csv.",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L48"
+    },
+    {
+      "id": "components_model_report_rationale_125",
+      "label": "Aplica m\u00e1rgenes y altura consistentes a todas las figuras Plotly.",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L125"
+    },
+    {
+      "id": "streamlit_app_components_results_grid_py",
+      "label": "results_grid.py",
+      "file_type": "code",
+      "source_file": "streamlit_app\\components\\results_grid.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "components_results_grid_render_stats",
+      "label": "render_stats()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\components\\results_grid.py",
+      "source_location": "L7"
+    },
+    {
+      "id": "components_results_grid_render_grid",
+      "label": "render_grid()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\components\\results_grid.py",
+      "source_location": "L30"
+    },
+    {
+      "id": "components_results_grid_rationale_1",
+      "label": "Componente de grilla de resultados con filtros.",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\components\\results_grid.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "components_results_grid_rationale_8",
+      "label": "Muestra m\u00e9tricas resumen en tarjetas.",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\components\\results_grid.py",
+      "source_location": "L8"
+    },
+    {
+      "id": "components_results_grid_rationale_31",
+      "label": "Renderiza la grilla interactiva de resultados con filtros.",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\components\\results_grid.py",
+      "source_location": "L31"
+    },
+    {
+      "id": "streamlit_app_components_init_py",
+      "label": "__init__.py",
+      "file_type": "code",
+      "source_file": "streamlit_app\\components\\__init__.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "streamlit_app_core_memory_py",
+      "label": "memory.py",
+      "file_type": "code",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "core_memory_ensure_db_dir",
+      "label": "_ensure_db_dir()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L20"
+    },
+    {
+      "id": "core_memory_get_conn",
+      "label": "_get_conn()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L26"
+    },
+    {
+      "id": "core_memory_init_db",
+      "label": "init_db()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L41"
+    },
+    {
+      "id": "core_memory_save_session",
+      "label": "save_session()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L75"
+    },
+    {
+      "id": "core_memory_get_sessions",
+      "label": "get_sessions()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L137"
+    },
+    {
+      "id": "core_memory_get_session_predictions",
+      "label": "get_session_predictions()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L164"
+    },
+    {
+      "id": "core_memory_get_trend_data",
+      "label": "get_trend_data()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L190"
+    },
+    {
+      "id": "core_memory_delete_session",
+      "label": "delete_session()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L212"
+    },
+    {
+      "id": "core_memory_rationale_1",
+      "label": "Sistema de memoria persistente con SQLite.  Guarda sesiones de predicci\u00f3n y re",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "core_memory_rationale_21",
+      "label": "Crea el directorio de la DB si no existe.",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L21"
+    },
+    {
+      "id": "core_memory_rationale_27",
+      "label": "Context manager para conexiones SQLite.",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L27"
+    },
+    {
+      "id": "core_memory_rationale_42",
+      "label": "Inicializa las tablas de la base de datos si no existen.",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L42"
+    },
+    {
+      "id": "core_memory_rationale_76",
+      "label": "Guarda una sesi\u00f3n completa (metadatos + predicciones individuales).      Args:",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L76"
+    },
+    {
+      "id": "core_memory_rationale_138",
+      "label": "Retorna el historial de sesiones ordenadas por fecha descendente.      Args:",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L138"
+    },
+    {
+      "id": "core_memory_rationale_165",
+      "label": "Retorna todas las predicciones de una sesi\u00f3n espec\u00edfica.      Args:         s",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L165"
+    },
+    {
+      "id": "core_memory_rationale_191",
+      "label": "Retorna datos agregados por sesi\u00f3n para gr\u00e1ficos de tendencia.      Returns:",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L191"
+    },
+    {
+      "id": "core_memory_rationale_213",
+      "label": "Elimina una sesi\u00f3n y sus predicciones asociadas.",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L213"
+    },
+    {
+      "id": "streamlit_app_core_shap_explainer_py",
+      "label": "shap_explainer.py",
+      "file_type": "code",
+      "source_file": "streamlit_app\\core\\shap_explainer.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "core_shap_explainer_get_explainer",
+      "label": "get_explainer()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\core\\shap_explainer.py",
+      "source_location": "L16"
+    },
+    {
+      "id": "core_shap_explainer_explain_lead",
+      "label": "explain_lead()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\core\\shap_explainer.py",
+      "source_location": "L25"
+    },
+    {
+      "id": "core_shap_explainer_translate_feature_name",
+      "label": "translate_feature_name()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\core\\shap_explainer.py",
+      "source_location": "L90"
+    },
+    {
+      "id": "core_shap_explainer_rationale_1",
+      "label": "Genera explicaciones SHAP para leads individuales. Usa TreeExplainer (optimizad",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\core\\shap_explainer.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "core_shap_explainer_rationale_17",
+      "label": "Carga el explainer SHAP (singleton para no recalcular).",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\core\\shap_explainer.py",
+      "source_location": "L17"
+    },
+    {
+      "id": "core_shap_explainer_rationale_26",
+      "label": "Genera explicaci\u00f3n SHAP para un lead individual.      Args:         df_model_",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\core\\shap_explainer.py",
+      "source_location": "L26"
+    },
+    {
+      "id": "core_shap_explainer_rationale_91",
+      "label": "Traduce nombres t\u00e9cnicos de features a lenguaje de negocio.",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\core\\shap_explainer.py",
+      "source_location": "L91"
+    },
+    {
+      "id": "streamlit_app_core_theme_py",
+      "label": "theme.py",
+      "file_type": "code",
+      "source_file": "streamlit_app\\core\\theme.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "core_theme_apply_theme",
+      "label": "apply_theme()",
+      "file_type": "code",
+      "source_file": "streamlit_app\\core\\theme.py",
+      "source_location": "L3"
+    },
+    {
+      "id": "core_theme_rationale_4",
+      "label": "Aplica estilos CSS globales a la aplicaci\u00f3n Streamlit, con toggle personalizado.",
+      "file_type": "rationale",
+      "source_file": "streamlit_app\\core\\theme.py",
+      "source_location": "L4"
+    },
+    {
+      "id": "streamlit_app_core_init_py",
+      "label": "__init__.py",
+      "file_type": "code",
+      "source_file": "streamlit_app\\core\\__init__.py",
+      "source_location": "L1"
+    }
+  ],
+  "edges": [
+    {
+      "source": "create_notebook_py",
+      "target": "nbformat",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "create_notebook.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "create_notebook_py",
+      "target": "os",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "create_notebook.py",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "create_v2_notebooks_py",
+      "target": "nbformat",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "create_v2_notebooks.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "create_v2_notebooks_py",
+      "target": "os",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "create_v2_notebooks.py",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "create_v2_notebooks_py",
+      "target": "predictivo_ml_leads_create_v2_notebooks_create_notebook",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "create_v2_notebooks.py",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "prueba_py",
+      "target": "pandas",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "prueba.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "prueba_py",
+      "target": "warnings",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "prueba.py",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "prueba_bot_py",
+      "target": "pandas",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "prueba_bot.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "prueba_bot_py",
+      "target": "warnings",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "prueba_bot.py",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "prueba_kwid_py",
+      "target": "pandas",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "prueba_kwid.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "update_00_notebook_py",
+      "target": "nbformat",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "update_00_notebook.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_compare_v1_v2_py",
+      "target": "pandas",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\compare_v1_v2.py",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_compare_v1_v2_py",
+      "target": "numpy",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\compare_v1_v2.py",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_compare_v1_v2_py",
+      "target": "sklearn_linear_model",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\compare_v1_v2.py",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_compare_v1_v2_py",
+      "target": "sklearn_ensemble",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\compare_v1_v2.py",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_compare_v1_v2_py",
+      "target": "sklearn_metrics",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\compare_v1_v2.py",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_compare_v1_v2_py",
+      "target": "warnings",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\compare_v1_v2.py",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_compare_v1_v2_rationale_1",
+      "target": "scripts_compare_v1_v2_py",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\compare_v1_v2.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_data_engineering_2025_py",
+      "target": "pandas",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\data_engineering_2025.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_data_engineering_2025_py",
+      "target": "os",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\data_engineering_2025.py",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_data_engineering_2025_py",
+      "target": "src_data_engineering_2025_main",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\data_engineering_2025.py",
+      "source_location": "L57",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_py",
+      "target": "argparse",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_py",
+      "target": "os",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_py",
+      "target": "sys",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_py",
+      "target": "joblib",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_py",
+      "target": "numpy",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_py",
+      "target": "pandas",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_py",
+      "target": "src_predict_fix_encoding",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L46",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_py",
+      "target": "src_predict_clasificar_franja",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L54",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_py",
+      "target": "src_predict_find_column",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L65",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_py",
+      "target": "src_predict_read_excel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L79",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_py",
+      "target": "src_predict_extract_date_features",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L87",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_py",
+      "target": "src_predict_select_columns",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L117",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_py",
+      "target": "src_predict_clean_nulls",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L165",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_py",
+      "target": "src_predict_apply_feature_engineering",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L186",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_py",
+      "target": "src_predict_predict",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L228",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_read_excel",
+      "target": "src_predict_fix_encoding",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L82",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_extract_date_features",
+      "target": "src_predict_find_column",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L89",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_select_columns",
+      "target": "src_predict_find_column",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L137",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_predict",
+      "target": "src_predict_read_excel",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L242",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_predict",
+      "target": "src_predict_extract_date_features",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L245",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_predict",
+      "target": "src_predict_select_columns",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L248",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_predict",
+      "target": "src_predict_clean_nulls",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L273",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_predict",
+      "target": "src_predict_apply_feature_engineering",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L277",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_rationale_1",
+      "target": "src_predict_py",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_rationale_47",
+      "target": "src_predict_fix_encoding",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L47",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_rationale_55",
+      "target": "src_predict_clasificar_franja",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L55",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_rationale_66",
+      "target": "src_predict_find_column",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L66",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_rationale_80",
+      "target": "src_predict_read_excel",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L80",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_rationale_88",
+      "target": "src_predict_extract_date_features",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L88",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_rationale_118",
+      "target": "src_predict_select_columns",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L118",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_rationale_166",
+      "target": "src_predict_clean_nulls",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L166",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_rationale_187",
+      "target": "src_predict_apply_feature_engineering",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L187",
+      "weight": 1.0
+    },
+    {
+      "source": "src_predict_rationale_229",
+      "target": "src_predict_predict",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\predict.py",
+      "source_location": "L229",
+      "weight": 1.0
+    },
+    {
+      "source": "src_save_artifacts_py",
+      "target": "pandas",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\save_artifacts.py",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "src_save_artifacts_py",
+      "target": "sklearn_model_selection",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\save_artifacts.py",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "src_save_artifacts_py",
+      "target": "joblib",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\save_artifacts.py",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "src_save_artifacts_py",
+      "target": "category_encoders",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\save_artifacts.py",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "src_save_artifacts_py",
+      "target": "src_save_artifacts_main",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\save_artifacts.py",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "src_save_artifacts_py",
+      "target": "src_save_artifacts_clasificar_franja",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\save_artifacts.py",
+      "source_location": "L122",
+      "weight": 1.0
+    },
+    {
+      "source": "src_save_artifacts_rationale_1",
+      "target": "src_save_artifacts_py",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\save_artifacts.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_train_py",
+      "target": "os",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\train.py",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_train_py",
+      "target": "sys",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\train.py",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_train_py",
+      "target": "joblib",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\train.py",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_train_py",
+      "target": "pandas",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\train.py",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "src_train_py",
+      "target": "sklearn_model_selection",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\train.py",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_train_py",
+      "target": "sklearn_ensemble",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\train.py",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "src_train_py",
+      "target": "sklearn_metrics",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\train.py",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "src_train_py",
+      "target": "predict",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\train.py",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "src_train_py",
+      "target": "src_train_main",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\train.py",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "src_train_rationale_1",
+      "target": "src_train_py",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\train.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_app_py",
+      "target": "streamlit",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\app.py",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_app_py",
+      "target": "components_upload",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\app.py",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_app_py",
+      "target": "components_results_grid",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\app.py",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_app_py",
+      "target": "components_lead_detail",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\app.py",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_app_py",
+      "target": "components_model_report",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\app.py",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_app_py",
+      "target": "components_history",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\app.py",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_app_py",
+      "target": "core_inference",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\app.py",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_app_py",
+      "target": "core_shap_explainer",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\app.py",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_app_py",
+      "target": "core_inference",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\app.py",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_app_py",
+      "target": "core_memory",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\app.py",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_app_py",
+      "target": "core_theme",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\app.py",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_app_rationale_1",
+      "target": "streamlit_app_app_py",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\app.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_history_py",
+      "target": "streamlit",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_history_py",
+      "target": "pandas",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_history_py",
+      "target": "core_memory",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_history_py",
+      "target": "components_history_render_trend_chart",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_history_py",
+      "target": "components_history_render_sessions_table",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_history_py",
+      "target": "components_history_render_session_detail",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L77",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_history_py",
+      "target": "components_history_render_history_page",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L150",
+      "weight": 1.0
+    },
+    {
+      "source": "components_history_render_history_page",
+      "target": "components_history_render_trend_chart",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L169",
+      "weight": 1.0
+    },
+    {
+      "source": "components_history_render_history_page",
+      "target": "components_history_render_sessions_table",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L173",
+      "weight": 1.0
+    },
+    {
+      "source": "components_history_render_history_page",
+      "target": "components_history_render_session_detail",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L179",
+      "weight": 1.0
+    },
+    {
+      "source": "components_history_rationale_1",
+      "target": "streamlit_app_components_history_py",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "components_history_rationale_15",
+      "target": "components_history_render_trend_chart",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "components_history_rationale_30",
+      "target": "components_history_render_sessions_table",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "components_history_rationale_78",
+      "target": "components_history_render_session_detail",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L78",
+      "weight": 1.0
+    },
+    {
+      "source": "components_history_rationale_151",
+      "target": "components_history_render_history_page",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L151",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_lead_detail_py",
+      "target": "streamlit",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\lead_detail.py",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_lead_detail_py",
+      "target": "pandas",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\lead_detail.py",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_lead_detail_py",
+      "target": "matplotlib_pyplot",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\lead_detail.py",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_lead_detail_py",
+      "target": "numpy",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\lead_detail.py",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_lead_detail_py",
+      "target": "components_lead_detail_render_lead_selector",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\lead_detail.py",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_lead_detail_py",
+      "target": "components_lead_detail_render_lead_detail",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\lead_detail.py",
+      "source_location": "L80",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_lead_detail_py",
+      "target": "components_lead_detail_render_shap_chart",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\lead_detail.py",
+      "source_location": "L143",
+      "weight": 1.0
+    },
+    {
+      "source": "components_lead_detail_render_lead_detail",
+      "target": "components_lead_detail_render_shap_chart",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\lead_detail.py",
+      "source_location": "L125",
+      "weight": 1.0
+    },
+    {
+      "source": "components_lead_detail_rationale_1",
+      "target": "streamlit_app_components_lead_detail_py",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\lead_detail.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "components_lead_detail_rationale_10",
+      "target": "components_lead_detail_render_lead_selector",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\lead_detail.py",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "components_lead_detail_rationale_81",
+      "target": "components_lead_detail_render_lead_detail",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\lead_detail.py",
+      "source_location": "L81",
+      "weight": 1.0
+    },
+    {
+      "source": "components_lead_detail_rationale_144",
+      "target": "components_lead_detail_render_shap_chart",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\lead_detail.py",
+      "source_location": "L144",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_model_report_py",
+      "target": "streamlit",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_model_report_py",
+      "target": "pandas",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_model_report_py",
+      "target": "numpy",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_model_report_py",
+      "target": "matplotlib_pyplot",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_model_report_py",
+      "target": "joblib",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_model_report_py",
+      "target": "os",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_model_report_py",
+      "target": "plotly_express",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_model_report_py",
+      "target": "plotly_graph_objects",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_model_report_py",
+      "target": "plotly_subplots",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_model_report_py",
+      "target": "sklearn_metrics",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_model_report_py",
+      "target": "components_model_report_load_clean_data",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L42",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_model_report_py",
+      "target": "components_model_report_load_train_test",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L47",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_model_report_py",
+      "target": "components_model_report_load_model",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L120",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_model_report_py",
+      "target": "components_model_report_plotly_layout",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L124",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_model_report_py",
+      "target": "components_model_report_render_model_report",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L137",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_model_report_py",
+      "target": "components_model_report_render_data_engineering",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L180",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_model_report_py",
+      "target": "components_model_report_render_eda",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L261",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_model_report_py",
+      "target": "components_model_report_render_feature_engineering",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L403",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_model_report_py",
+      "target": "components_model_report_render_modeling",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L494",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_model_report_py",
+      "target": "components_model_report_render_evaluation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L608",
+      "weight": 1.0
+    },
+    {
+      "source": "components_model_report_render_model_report",
+      "target": "components_model_report_load_clean_data",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L149",
+      "weight": 1.0
+    },
+    {
+      "source": "components_model_report_render_model_report",
+      "target": "components_model_report_render_data_engineering",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L160",
+      "weight": 1.0
+    },
+    {
+      "source": "components_model_report_render_model_report",
+      "target": "components_model_report_render_eda",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L163",
+      "weight": 1.0
+    },
+    {
+      "source": "components_model_report_render_model_report",
+      "target": "components_model_report_render_feature_engineering",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L166",
+      "weight": 1.0
+    },
+    {
+      "source": "components_model_report_render_model_report",
+      "target": "components_model_report_render_modeling",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L169",
+      "weight": 1.0
+    },
+    {
+      "source": "components_model_report_render_model_report",
+      "target": "components_model_report_render_evaluation",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L172",
+      "weight": 1.0
+    },
+    {
+      "source": "components_model_report_render_eda",
+      "target": "components_model_report_plotly_layout",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L286",
+      "weight": 1.0
+    },
+    {
+      "source": "components_model_report_render_feature_engineering",
+      "target": "components_model_report_plotly_layout",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L421",
+      "weight": 1.0
+    },
+    {
+      "source": "components_model_report_render_modeling",
+      "target": "components_model_report_load_train_test",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L499",
+      "weight": 1.0
+    },
+    {
+      "source": "components_model_report_render_modeling",
+      "target": "components_model_report_load_model",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L500",
+      "weight": 1.0
+    },
+    {
+      "source": "components_model_report_render_modeling",
+      "target": "components_model_report_plotly_layout",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L527",
+      "weight": 1.0
+    },
+    {
+      "source": "components_model_report_render_evaluation",
+      "target": "components_model_report_load_train_test",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L611",
+      "weight": 1.0
+    },
+    {
+      "source": "components_model_report_render_evaluation",
+      "target": "components_model_report_load_model",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L612",
+      "weight": 1.0
+    },
+    {
+      "source": "components_model_report_render_evaluation",
+      "target": "components_model_report_plotly_layout",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L658",
+      "weight": 1.0
+    },
+    {
+      "source": "components_model_report_rationale_1",
+      "target": "streamlit_app_components_model_report_py",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "components_model_report_rationale_48",
+      "target": "components_model_report_load_train_test",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L48",
+      "weight": 1.0
+    },
+    {
+      "source": "components_model_report_rationale_125",
+      "target": "components_model_report_plotly_layout",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\model_report.py",
+      "source_location": "L125",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_results_grid_py",
+      "target": "streamlit",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\results_grid.py",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_results_grid_py",
+      "target": "pandas",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\results_grid.py",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_results_grid_py",
+      "target": "components_results_grid_render_stats",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\results_grid.py",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_components_results_grid_py",
+      "target": "components_results_grid_render_grid",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\results_grid.py",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "components_results_grid_rationale_1",
+      "target": "streamlit_app_components_results_grid_py",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\results_grid.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "components_results_grid_rationale_8",
+      "target": "components_results_grid_render_stats",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\results_grid.py",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "components_results_grid_rationale_31",
+      "target": "components_results_grid_render_grid",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\components\\results_grid.py",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_core_memory_py",
+      "target": "os",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_core_memory_py",
+      "target": "json",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_core_memory_py",
+      "target": "sqlite3",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_core_memory_py",
+      "target": "datetime",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_core_memory_py",
+      "target": "contextlib",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_core_memory_py",
+      "target": "pandas",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_core_memory_py",
+      "target": "core_memory_ensure_db_dir",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_core_memory_py",
+      "target": "core_memory_get_conn",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_core_memory_py",
+      "target": "core_memory_init_db",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L41",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_core_memory_py",
+      "target": "core_memory_save_session",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L75",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_core_memory_py",
+      "target": "core_memory_get_sessions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L137",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_core_memory_py",
+      "target": "core_memory_get_session_predictions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L164",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_core_memory_py",
+      "target": "core_memory_get_trend_data",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L190",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_core_memory_py",
+      "target": "core_memory_delete_session",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L212",
+      "weight": 1.0
+    },
+    {
+      "source": "core_memory_get_conn",
+      "target": "core_memory_ensure_db_dir",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "core_memory_init_db",
+      "target": "core_memory_get_conn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L43",
+      "weight": 1.0
+    },
+    {
+      "source": "core_memory_save_session",
+      "target": "core_memory_init_db",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L87",
+      "weight": 1.0
+    },
+    {
+      "source": "core_memory_save_session",
+      "target": "core_memory_get_conn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L94",
+      "weight": 1.0
+    },
+    {
+      "source": "core_memory_get_sessions",
+      "target": "core_memory_init_db",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L147",
+      "weight": 1.0
+    },
+    {
+      "source": "core_memory_get_sessions",
+      "target": "core_memory_get_conn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L148",
+      "weight": 1.0
+    },
+    {
+      "source": "core_memory_get_session_predictions",
+      "target": "core_memory_init_db",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L174",
+      "weight": 1.0
+    },
+    {
+      "source": "core_memory_get_session_predictions",
+      "target": "core_memory_get_conn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L175",
+      "weight": 1.0
+    },
+    {
+      "source": "core_memory_get_trend_data",
+      "target": "core_memory_init_db",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L197",
+      "weight": 1.0
+    },
+    {
+      "source": "core_memory_get_trend_data",
+      "target": "core_memory_get_conn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L198",
+      "weight": 1.0
+    },
+    {
+      "source": "core_memory_delete_session",
+      "target": "core_memory_init_db",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L214",
+      "weight": 1.0
+    },
+    {
+      "source": "core_memory_delete_session",
+      "target": "core_memory_get_conn",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L215",
+      "weight": 1.0
+    },
+    {
+      "source": "core_memory_rationale_1",
+      "target": "streamlit_app_core_memory_py",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "core_memory_rationale_21",
+      "target": "core_memory_ensure_db_dir",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "core_memory_rationale_27",
+      "target": "core_memory_get_conn",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "core_memory_rationale_42",
+      "target": "core_memory_init_db",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L42",
+      "weight": 1.0
+    },
+    {
+      "source": "core_memory_rationale_76",
+      "target": "core_memory_save_session",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L76",
+      "weight": 1.0
+    },
+    {
+      "source": "core_memory_rationale_138",
+      "target": "core_memory_get_sessions",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L138",
+      "weight": 1.0
+    },
+    {
+      "source": "core_memory_rationale_165",
+      "target": "core_memory_get_session_predictions",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L165",
+      "weight": 1.0
+    },
+    {
+      "source": "core_memory_rationale_191",
+      "target": "core_memory_get_trend_data",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L191",
+      "weight": 1.0
+    },
+    {
+      "source": "core_memory_rationale_213",
+      "target": "core_memory_delete_session",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\memory.py",
+      "source_location": "L213",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_core_shap_explainer_py",
+      "target": "shap",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\shap_explainer.py",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_core_shap_explainer_py",
+      "target": "numpy",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\shap_explainer.py",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_core_shap_explainer_py",
+      "target": "pandas",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\shap_explainer.py",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_core_shap_explainer_py",
+      "target": "g_descargas_desarrollo_predictivo_ml_leads_streamlit_app_core_inference_py",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\shap_explainer.py",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_core_shap_explainer_py",
+      "target": "core_shap_explainer_get_explainer",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\shap_explainer.py",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_core_shap_explainer_py",
+      "target": "core_shap_explainer_explain_lead",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\shap_explainer.py",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_core_shap_explainer_py",
+      "target": "core_shap_explainer_translate_feature_name",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\shap_explainer.py",
+      "source_location": "L90",
+      "weight": 1.0
+    },
+    {
+      "source": "core_shap_explainer_explain_lead",
+      "target": "core_shap_explainer_get_explainer",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\shap_explainer.py",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "core_shap_explainer_explain_lead",
+      "target": "core_shap_explainer_translate_feature_name",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\shap_explainer.py",
+      "source_location": "L72",
+      "weight": 1.0
+    },
+    {
+      "source": "core_shap_explainer_rationale_1",
+      "target": "streamlit_app_core_shap_explainer_py",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\shap_explainer.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "core_shap_explainer_rationale_17",
+      "target": "core_shap_explainer_get_explainer",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\shap_explainer.py",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "core_shap_explainer_rationale_26",
+      "target": "core_shap_explainer_explain_lead",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\shap_explainer.py",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "core_shap_explainer_rationale_91",
+      "target": "core_shap_explainer_translate_feature_name",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\shap_explainer.py",
+      "source_location": "L91",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_core_theme_py",
+      "target": "streamlit",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\theme.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "streamlit_app_core_theme_py",
+      "target": "core_theme_apply_theme",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\theme.py",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "core_theme_rationale_4",
+      "target": "core_theme_apply_theme",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "streamlit_app\\core\\theme.py",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_data_engineering_2025_main",
+      "target": "src_predict_read_excel",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src\\data_engineering_2025.py",
+      "source_location": "L60",
+      "weight": 1.0
+    },
+    {
+      "source": "src_train_main",
+      "target": "src_predict_apply_feature_engineering",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src\\train.py",
+      "source_location": "L39",
+      "weight": 1.0
+    },
+    {
+      "source": "components_history_render_session_detail",
+      "target": "core_memory_get_session_predictions",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L95",
+      "weight": 1.0
+    },
+    {
+      "source": "components_history_render_session_detail",
+      "target": "core_memory_delete_session",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L116",
+      "weight": 1.0
+    },
+    {
+      "source": "components_history_render_history_page",
+      "target": "core_memory_get_sessions",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L155",
+      "weight": 1.0
+    },
+    {
+      "source": "components_history_render_history_page",
+      "target": "core_memory_get_trend_data",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "streamlit_app\\components\\history.py",
+      "source_location": "L156",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}
