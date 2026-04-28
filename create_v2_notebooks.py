@@ -69,7 +69,10 @@ axes[1].set_ylabel("")
 
 plt.tight_layout()
 plt.show()"""),
-    ('markdown', """**Diferencias V1 vs V2 - Distribución del Target:**
+    ('markdown', """**Resultados y Hallazgos:**
+La distribución actual muestra un ~37% de Hot Leads y un ~63% de Cold Leads. Esto indica que tenemos un dataset moderadamente desbalanceado, pero con una proporción muy sana para entrenar algoritmos. A diferencia de problemas de anomalías donde la clase minoritaria es del 1%, un 37% de conversión permite a los modelos capturar bien los patrones sin necesidad obligatoria de aplicar técnicas artificiales como SMOTE.
+
+**Diferencias V1 vs V2 - Distribución del Target:**
 En la versión 1, debido a un dataset reducido y la presencia masiva de bots, la tasa de conversión mostraba un sesgo irrealmente alto cercano al 68%. En esta versión 2 (al limpiar meses anómalos y bots), la distribución refleja la **verdadera tasa de conversión orgánica** que ronda el 37%. Esta base sin sesgar es fundamental para no sobreestimar la capacidad predictiva de los modelos y reflejar las proporciones reales de ventas."""),
     ('markdown', """## Análisis de Variables Temporales
 Distribución y Tasa de Conversión (Hot Leads) por Hora, Día de la Semana y Mes.
@@ -122,7 +125,12 @@ for i, col in enumerate(cols_temp):
             ax_conv.annotate(percentage, (x, y), ha='center', va='bottom', fontsize=9)
 
 plt.show()"""),
-    ('markdown', """**Evaluación y Comentarios V2:**
+    ('markdown', """**Resultados y Hallazgos:**
+- **Hora:** Observamos una curva de campana normal en el volumen durante horarios comerciales (picos entre 10 AM y 5 PM). La conversión se mantiene estable a lo largo del día.
+- **Día de la Semana:** El volumen es claramente superior de Lunes a Viernes, reduciéndose drásticamente los fines de semana. La tasa de conversión no decae los fines de semana, indicando que el lead que llega en Sábado/Domingo tiene la misma intención de compra.
+- **Mes:** Observamos los volúmenes operativos reales por mes a lo largo del año 2025.
+
+**Diferencias V1 vs V2 - Variables Temporales:**
 A diferencia de la V1, donde el volumen mensual no permitía deducir tendencias por el ruido provocado por el bot, aquí se observa claramente la cantidad de leads orgánicos gestionados por el equipo comercial de forma mensual. Al remover meses anómalos, el modelo aprende patrones temporales correctos en lugar de sesgarse por picos atípicos."""),
     ('markdown', """## Análisis de Variables Categóricas Principales
 Volumen y Tasa de Conversión para variables categóricas clave."""),
@@ -168,7 +176,10 @@ for col in variables_cat:
 
     plt.tight_layout()
     plt.show()"""),
-    ('markdown', """**Diferencias V1 vs V2 - Variables Categóricas:**
+    ('markdown', """**Resultados y Hallazgos:**
+Al observar el Top 10 de categorías, notamos un fenómeno clásico de Marketing: existen campañas o canales con un volumen de tráfico gigantesco pero con tasas de conversión paupérrimas (leads de baja calidad/tráfico frío), mientras que otras fuentes de nicho tienen un volumen muy bajo pero una conversión sobresaliente. Esta no linealidad y alta cardinalidad es exactamente la relación que el modelo Predictivo deberá aprender a mapear.
+
+**Diferencias V1 vs V2 - Variables Categóricas:**
 En la versión 1 existía la variable `plataforma` que generaba un sesgo enorme porque diferenciaba a los bots de los humanos. Como en la V2 eliminamos por completo a los bots desde la fase de Data Engineering, la plataforma quedó con varianza cero (todos son humanos procesados por MX_LEAD_QUALIF), por lo que fue **eliminada** del análisis.
 
 Además, vemos una dispersión muy grande en campañas y orígenes. En V1 esto se transformó con One-Hot Encoding generando decenas de columnas ruidosas. En V2 usaremos Target Encoding (Suavizado Bayesiano) para aprovechar la alta cardinalidad sin explotar la cantidad de columnas del modelo."""),
@@ -195,7 +206,11 @@ axes[1].set_ylabel("Día de la Semana")
 
 plt.tight_layout()
 plt.show()"""),
-    ('markdown', """**Diferencias V1 vs V2 - Mapas de Calor Temporales:**
+    ('markdown', """**Resultados y Hallazgos (Mapas de Calor):**
+- **Mapa de Volumen:** Muestra clústeres (manchas oscuras) sumamente marcados de Lunes a Viernes en la franja horaria de 9:00 a 19:00 horas, que corresponde a los horarios operativos pico de los concesionarios y del equipo comercial.
+- **Mapa de Conversión:** Revela algo interesantísimo: los "picos de conversión" (celdas rojas) no necesariamente se alinean al 100% con los momentos de mayor volumen. Existen franjas horarias específicas donde los leads, aunque menos frecuentes, tienen altísima propensión a convertirse en Hot Leads.
+
+**Diferencias V1 vs V2 - Mapas de Calor Temporales:**
 En la V1 los mapas de calor estaban gravemente distorsionados porque la extracción original perdía la hora real y los bots procesaban en lotes masivos. Tras corregir la extracción y limpiar los bots en V2, **el mapa de calor recupera su lógica comercial**: observamos clústeres de volumen claros en días y horarios laborables de alto contacto orgánico."""),
     ('markdown', """## Correlación entre Variables Numéricas
 
