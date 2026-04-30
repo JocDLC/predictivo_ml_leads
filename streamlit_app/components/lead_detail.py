@@ -143,40 +143,83 @@ def render_lead_detail(results, explanation_df, base_value, predicted_proba, row
 def render_shap_chart(explanation_df):
     """Renderiza gráfico de barras horizontal con impactos SHAP estilo UI moderna."""
     df_plot = explanation_df.sort_values("impacto_abs", ascending=True).tail(6)
-    
-    html = '<div class="shap-container">'
-    
+
+    # CSS inline para garantizar renderizado correcto independientemente del tema
+    html = """
+<style>
+.shap-container { margin-top: 15px; }
+.shap-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+    font-size: 0.85rem;
+}
+.shap-feature-name {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 60%;
+}
+.shap-feature-val { font-weight: 600; }
+.shap-val-hot  { color: #ef4444; }
+.shap-val-cold { color: #3b82f6; }
+.shap-bar-bg {
+    width: 100%;
+    background-color: rgba(150,150,150,0.25);
+    height: 6px;
+    border-radius: 4px;
+    position: relative;
+    margin-bottom: 16px;
+}
+.shap-bar-fill-hot {
+    height: 100%;
+    background-color: #ef4444;
+    border-radius: 4px;
+    position: absolute;
+    right: 50%;
+}
+.shap-bar-fill-cold {
+    height: 100%;
+    background-color: #3b82f6;
+    border-radius: 4px;
+    position: absolute;
+    left: 50%;
+}
+</style>
+<div class="shap-container">
+"""
+
     for _, row in df_plot.iterrows():
-        feature = row["feature"]
-        impacto = row["impacto"]
-        
-        is_hot = impacto > 0
+        feature  = row["feature"]
+        impacto  = row["impacto"]
+
+        is_hot    = impacto > 0
         val_class = "shap-val-hot" if is_hot else "shap-val-cold"
-        sign = "+" if is_hot else ""
-        
-        # Calcular porcentaje para el ancho de la barra (max impacto en el top 6)
-        max_abs = df_plot["impacto_abs"].max()
-        if max_abs == 0:
-            max_abs = 1
-        width_pct = (abs(impacto) / max_abs) * 50 # 50% max for each side
-        
+        sign      = "+" if is_hot else ""
+
+        max_abs = df_plot["impacto_abs"].max() or 1
+        width_pct = (abs(impacto) / max_abs) * 50  # 50% max por lado
+
         if is_hot:
             bar_style = f"width: {width_pct}%; right: 50%;"
             bar_class = "shap-bar-fill-hot"
         else:
             bar_style = f"width: {width_pct}%; left: 50%;"
             bar_class = "shap-bar-fill-cold"
-        
-        html += f'''
-        <div class="shap-row">
-            <span class="shap-feature-name" title="{feature}">{feature}</span>
-            <span class="shap-feature-val {val_class}">{sign}{impacto:.2f}</span>
-        </div>
-        <div class="shap-bar-bg">
-            <div class="{bar_class}" style="{bar_style}"></div>
-        </div>
-        '''
-        
-    html += '</div>'
-    
+
+        html += f"""
+<div class="shap-row">
+    <span class="shap-feature-name" title="{feature}">{feature}</span>
+    <span class="shap-feature-val {val_class}">{sign}{impacto:.2f}</span>
+</div>
+<div class="shap-bar-bg">
+    <div class="{bar_class}" style="{bar_style}"></div>
+</div>
+"""
+
+    html += "</div>"
+
     st.markdown(html, unsafe_allow_html=True)
+

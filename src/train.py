@@ -24,8 +24,8 @@ def main():
     df = pd.read_csv(CLEANED_PATH)
     artifacts = joblib.load(ARTIFACTS_PATH)
 
-    # Mismas variables eliminadas en el preprocesamiento
-    df = df.drop(columns=["anio_creacion", "subtipo_interes", "plataforma"])
+    # Mismas variables eliminadas en el preprocesamiento (pueden ya no estar en el CSV limpio)
+    df = df.drop(columns=["anio_creacion", "subtipo_interes", "plataforma"], errors="ignore")
 
     X = df.drop(columns=["target"])
     y = df["target"]

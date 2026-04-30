@@ -45,75 +45,35 @@ def load_clean_data():
 
 @st.cache_data
 def load_train_test():
-    """Regenera X_train/X_test aplicando el pipeline V2 desde leads_cleaned.csv."""
-    from sklearn.model_selection import train_test_split
+    """Carga los datasets preprocesados que generó src/train.py.
 
-    df = pd.read_csv(CLEAN_PATH)
-    arts = joblib.load(MODEL_PATH.replace("best_model.joblib", "preprocessing_config.joblib"))
+    Usar los CSVs guardados garantiza que las columnas sean exactamente
+    las mismas con las que se entrenó el modelo, evitando errores de
+    feature name mismatch al llamar a predict_proba().
+    """
+    x_train_path = os.path.join(DATA_DIR, "X_train.csv")
+    x_test_path  = os.path.join(DATA_DIR, "X_test.csv")
+    y_train_path = os.path.join(DATA_DIR, "y_train.csv")
+    y_test_path  = os.path.join(DATA_DIR, "y_test.csv")
 
-    known_cats = arts["known_categories"]
-    conc_means = arts["concesionario_means"]
-    global_mean = arts["global_mean"]
-    bayesian_encoders = arts.get("bayesian_encoders", None)
-    training_cols = arts["training_columns"]
+    # Si los CSVs procesados existen, cargarlos directamente
+    if all(os.path.exists(p) for p in [x_train_path, x_test_path, y_train_path, y_test_path]):
+        X_train = pd.read_csv(x_train_path)
+        X_test  = pd.read_csv(x_test_path)
+        y_train = pd.read_csv(y_train_path).squeeze()
+        y_test  = pd.read_csv(y_test_path).squeeze()
+        return X_train, X_test, y_train, y_test
 
-    def clasificar_franja(hora):
-        if hora < 6:
-            return "madrugada"
-        elif hora < 12:
-            return "manana"
-        elif hora < 18:
-            return "tarde"
-        return "noche"
-
-    # Eliminar columnas sin valor (las que quitó el pipeline original)
-    drop_cols = [c for c in ["anio_creacion", "subtipo_interes", "plataforma"] if c in df.columns]
-    df = df.drop(columns=drop_cols)
-
-    # Features derivadas
-    df["es_fin_de_semana"] = df["dia_semana_creacion"].isin(["s\u00e1bado", "domingo"]).astype(int)
-    df["franja_horaria"] = df["hora_creacion"].apply(clasificar_franja)
-
-    # Agrupar categorías raras
-    for col, valid_cats in known_cats.items():
-        if col in df.columns:
-            df.loc[~df[col].isin(valid_cats), col] = "otros"
-
-    # Target encoding para concesionario
-    df["concesionario_target_enc"] = df["concesionario"].map(conc_means).fillna(global_mean)
-    df = df.drop(columns=["concesionario"])
-
-    X = df.drop(columns=["target"])
-    y = df["target"]
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
+    # Fallback: regenerar desde leads_cleaned.csv usando el pipeline v2
+    # (solo si los CSVs no existen — ejecutar src/train.py los genera)
+    st.warning(
+        "⚠️ No se encontraron los datasets preprocesados en `data/processed/`. "
+        "Ejecuta `python src/train.py` para generarlos y recarga la app."
     )
-
-    if bayesian_encoders:
-        # V2: Bayesian Encoding — aplicar encoders entrenados solo sobre train
-        for col, encoder in bayesian_encoders.items():
-            if col in X_train.columns:
-                X_train[f"{col}_bayes_enc"] = encoder.transform(X_train[col]).values
-                X_train = X_train.drop(columns=[col])
-            if col in X_test.columns:
-                X_test[f"{col}_bayes_enc"] = encoder.transform(X_test[col]).values
-                X_test = X_test.drop(columns=[col])
-        # Eliminar columnas object restantes
-        for frame in [X_train, X_test]:
-            rem = list(frame.select_dtypes(include="object").columns)
-            if rem:
-                X_train = X_train.drop(columns=[c for c in rem if c in X_train.columns])
-                X_test = X_test.drop(columns=[c for c in rem if c in X_test.columns])
-    else:
-        # V1: One-Hot Encoding
-        obj_cols = list(X_train.select_dtypes(include="object").columns)
-        X_train = pd.get_dummies(X_train, columns=obj_cols, drop_first=True, dtype=int)
-        X_test = pd.get_dummies(X_test, columns=obj_cols, drop_first=True, dtype=int)
-
-    X_train = X_train.reindex(columns=training_cols, fill_value=0)
-    X_test = X_test.reindex(columns=training_cols, fill_value=0)
-
-    return X_train, X_test, y_train, y_test
+    raise FileNotFoundError(
+        "Faltan X_train.csv / X_test.csv en data/processed/. "
+        "Ejecuta: python src/train.py"
+    )
 
 
 @st.cache_resource
@@ -187,7 +147,7 @@ def _render_data_engineering(df):
 
     # --- KPIs ---
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Filas originales", "13,516")
+    col1.metric("Filas originales", "13,516", delta=" ", delta_color="off")
     col2.metric("Filas limpias", f"{len(df):,}", delta="-37.7%", delta_color="off")
     col3.metric("Columnas", f"{len(df.columns)}", delta="27 → 14", delta_color="off")
     col4.metric("Nulos restantes", "0", delta="-100%", delta_color="off")
@@ -326,48 +286,84 @@ def _render_eda(df):
     _plotly_layout(fig, 400)
     st.plotly_chart(fig, use_container_width=True)
 
-    st.info("🟢 **Verde oscuro (>80%):** sábado noche y domingo madrugada. 🔴 **Rojo (<55%):** jueves tarde-noche.")
+    st.info("📊 Pasa el cursor sobre cada celda para ver la tasa de conversión exacta.")
 
     # --- Tasa de conversión por feature ---
     st.subheader("2.3 Tasa de conversión por feature categórica")
 
-    cat_features = ["vehiculo_interes", "origen", "campana", "nombre_formulario", "origen_creacion"]
-    selected_feat = st.selectbox("Selecciona una variable:", cat_features)
+    cat_features = {
+        "Vehículo": "vehiculo_interes",
+        "Origen": "origen",
+        "Campaña": "campana",
+        "Formulario": "nombre_formulario",
+        "Canal": "origen_creacion"
+    }
+    
+    # Selector estilo radio horizontal para mejor respuesta en tabs
+    labels = list(cat_features.keys())
+    selected_label = st.radio(
+        "Filtrar por:", 
+        labels, 
+        index=0, 
+        horizontal=True, 
+        key="eda_feature_radio"
+    )
+    
+    selected_feat = cat_features[selected_label]
 
-    conv = df.groupby(selected_feat)["target"].agg(["mean", "count"]).reset_index()
-    conv["mean"] = conv["mean"] * 100
-    conv = conv.sort_values("mean", ascending=True)
-    conv["color"] = conv["mean"].apply(lambda x: ACCENT if x >= global_rate else HOT_COLOR)
+    # Contenedor para la gráfica
+    with st.container():
+        conv = df.groupby(selected_feat)["target"].agg(["mean", "count"]).reset_index()
+        conv["mean"] = conv["mean"] * 100
+        conv = conv.sort_values("mean", ascending=True)
+        conv["color"] = conv["mean"].apply(lambda x: ACCENT if x >= global_rate else HOT_COLOR)
 
-    fig = go.Figure(go.Bar(
-        y=conv[selected_feat], x=conv["mean"], orientation="h",
-        marker_color=conv["color"],
-        text=[f"{m:.1f}% (n={int(c):,})" for m, c in zip(conv["mean"], conv["count"])],
-        textposition="outside", textfont_size=12,
-        hovertemplate="%{y}<br>Conversión: %{x:.1f}%<extra></extra>",
-    ))
-    fig.add_vline(x=global_rate, line_dash="dash", line_color="gray",
-                  annotation_text=f"Promedio {global_rate:.1f}%")
-    fig.update_layout(title=f"Tasa de conversión por {selected_feat}",
-                      xaxis_title="% Hot Lead", yaxis_title="")
-    _plotly_layout(fig, max(350, len(conv) * 38))
-    st.plotly_chart(fig, use_container_width=True)
+        fig = go.Figure(go.Bar(
+            y=conv[selected_feat], 
+            x=conv["mean"], 
+            orientation="h",
+            marker_color=conv["color"],
+            text=[f"{m:.1f}% (n={int(c):,})" for m, c in zip(conv["mean"], conv["count"])],
+            textposition="outside", 
+            textfont_size=11,
+            hovertemplate="%{y}<br>Conversión: %{x:.1f}%<extra></extra>",
+        ))
+        fig.add_vline(x=global_rate, line_dash="dash", line_color="gray",
+                      annotation_text=f"Promedio {global_rate:.1f}%")
+        
+        # Altura dinámica según número de categorías
+        chart_height = max(350, len(conv) * 30)
+        
+        fig.update_layout(
+            title=f"Tasa de conversión por {selected_label}",
+            xaxis_title="% Hot Lead", 
+            yaxis_title="",
+            height=chart_height
+        )
+        _plotly_layout(fig)
+        st.plotly_chart(fig, use_container_width=True, key=f"chart_{selected_feat}")
+
 
     # --- Cramér's V ---
     st.subheader("2.4 Fuerza de asociación con el Target")
+    
     from scipy.stats import chi2_contingency
 
-    def cramers_v(x, y):
-        ct = pd.crosstab(x, y)
-        chi2 = chi2_contingency(ct)[0]
-        n = ct.sum().sum()
-        min_dim = min(ct.shape) - 1
-        return np.sqrt(chi2 / (n * min_dim)) if min_dim > 0 else 0
+    def calculate_cramers_v(df_in):
+        def cramers_v(x, y):
+            ct = pd.crosstab(x, y)
+            chi2 = chi2_contingency(ct)[0]
+            n = ct.sum().sum()
+            min_dim = min(ct.shape) - 1
+            return np.sqrt(chi2 / (n * min_dim)) if min_dim > 0 else 0
 
-    cat_cols = df.select_dtypes(include="object").columns.tolist()
-    cramers = {col: cramers_v(df[col], df["target"]) for col in cat_cols}
-    cramers_df = pd.DataFrame(sorted(cramers.items(), key=lambda x: x[1]),
-                               columns=["Feature", "V"])
+        cat_cols = df_in.select_dtypes(include="object").columns.tolist()
+        cramers = {col: cramers_v(df_in[col], df_in["target"]) for col in cat_cols}
+        return pd.DataFrame(sorted(cramers.items(), key=lambda x: x[1]),
+                           columns=["Feature", "V"])
+
+    cramers_df = calculate_cramers_v(df)
+
 
     fig = go.Figure(go.Bar(
         y=cramers_df["Feature"], x=cramers_df["V"], orientation="h",
