@@ -46,3 +46,6 @@ models/preprocessing_config.joblib
 
 # Base de datos SQLite de historial (local, no compartir)
 data/memory/*.db
+
+# Graphify outputs (generados localmente)
+graphify-out/
