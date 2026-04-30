@@ -108,9 +108,23 @@ predictivo_ml_leads/
 
 ---
 
+## Decisiones de data leakage documentadas
+
+| Fecha | Variable/Fuente | Acción | Motivo |
+|-------|----------------|--------|--------|
+| V1 | `plataforma_MX_LEAD_QUALIF` | Eliminada | Cola CRM = respuesta ya asignada (41.2% importancia) |
+| Abr 2026 | `MX_Renault_0125_Arkana_Lead` | Leads eliminados | Enviados como Hot sin cualificación humana (+36.6pp vs ONE-PR) |
+| Abr 2026 | `MX_Renault_0125_Oroch_Lead` | Leads eliminados | Enviados como Hot sin cualificación humana (+35.2pp vs ONE-PR) |
+
+> Validado con equipo comercial Renault México. Ver `PENDIENTES_VALIDACION.md` para detalle completo.
+
+---
+
 ## Estado actual del proyecto
 - ✅ App Streamlit funcional con SQLite
 - ✅ Tab de Historial con tendencias y exportación CSV
 - ✅ Explicabilidad SHAP por lead individual
+- ✅ Data leakage de Arkana/Oroch identificado y corregido
 - ⚠️ Warnings de Streamlit: reemplazar `use_container_width` → `width` (deprecado en dic 2025)
+- ⚠️ `nombre_formulario` y `campana` son redundantes para formularios MX_Renault (relación 1:1)
 - 📋 Ver `PENDIENTES_VALIDACION.md` para tareas pendientes

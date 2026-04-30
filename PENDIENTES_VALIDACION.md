@@ -1,38 +1,49 @@
-# Pendientes por validar con Natalia Posadas
+# Pendientes por validar con el equipo comercial
 
-Hallazgos del EDA (`01_exploratory_data_analysis(EDA).ipynb`, sección 5) que requieren validación de negocio antes de continuar.
+Hallazgos del EDA que requieren validación de negocio antes de continuar.
 
 ---
 
-## 1. Origen de creación: Facebook convierte al 99.3%
+## ✅ RESUELTO — Leads pre-clasificados como Hot (Arkana y Oroch)
 
-- Los leads con `origen_creacion = Facebook` tienen una tasa de conversión del **99.3%**, muy por encima del promedio global (68.7%).
-- **Pregunta:** ¿Es real esta conversión o hay algún sesgo en cómo se registran los leads de Facebook? ¿Podría ser otro caso de data leakage similar al de `plataforma`?
+> **Fecha de resolución:** Abril 2026  
+> **Validado con:** Equipo comercial Renault México
 
-## 2. Vehículos de interés con conversión ~100%
+### Hallazgo
+Los formularios `MX_Renault_0125_Arkana_Lead` (67.4% Hot, n=2,981) y `MX_Renault_0125_Oroch_Lead` (87.1% Hot, n=954) tenían tasas de conversión anormalmente altas comparadas con el mismo vehículo vía `ONE-PR` (+36.6pp y +35.2pp respectivamente).
 
-Varios modelos de vehículo tienen tasas de conversión extremadamente altas (cercanas al 100%):
+### Confirmación del equipo
+**Sí, durante 2025 las campañas de Facebook para Arkana y Oroch se enviaban directamente como Hot Leads al concesionario**, sin pasar por cualificación humana. Esto constituye data leakage: el `target=1` no refleja intención de compra real.
 
-- **DUSTER** — 100%
-- **KOLEOS / KOLEOS 2026** — ~99.6-99.7%
-- **LOGAN** — tasa muy alta
-- **KWID E-TECH** — tasa muy alta
-- **MASTER E-TECH** — tasa muy alta
-- **ARKANA / ARKANA HYBRID E-TECH** — ~80-100%
-- **KARDIAN** — tasa muy alta
-- **STEPWAY** — tasa muy alta
-- **KANGOO** — tasa muy alta
-- **OROCH** — ~85%
+### Acción tomada
+- **Eliminados del dataset de entrenamiento** en el notebook `00_data_engineering_v2_2025.ipynb` (paso 8).
+- Los formularios de Koleos (36.8%), Megane (18.2%), Kardian (67.0%) y Kangoo (65.0%) se conservan porque **sí pasaban por cualificación estándar**.
+- Se documentó en los notebooks de Data Engineering, EDA y Feature Engineering.
 
-- **Pregunta:** ¿Por qué casi todos los vehículos (excepto KWID estándar al 53.7%) convierten tan alto? ¿Es posible que la definición de "Hot Lead" en el CRM esté sesgada hacia ciertos modelos? ¿O es que KWID atrae un perfil de lead diferente (más exploratorio)?
+### Hallazgo adicional: `nombre_formulario` y `campana` son redundantes
+Cada formulario `MX_Renault_*` tiene **exactamente 1 campana** (relación 1:1). Son la misma variable con diferente nombre. Se recomienda evaluar si eliminar una de las dos para reducir multicolinealidad.
 
-## 3. Campañas con conversión ~100%
+---
 
-- Varias campañas activas tienen tasas de conversión extremadamente altas (92-100%), como `mx-r-l-wc-newcar-kwid-tbb` (92.2%), `mx-r-l-lg-newcar-kwid-tbb` (99.5%), `mx-r-l-lg-newcar-duster_o` (100%), `OC_RSF_FID` (100%).
-- En contraste, `sin_campana` (leads orgánicos) convierte solo al **45.6%**.
-- **Pregunta:** ¿Las campañas pagas de Meta/Facebook están generando leads que ya vienen pre-clasificados como Hot por algún proceso automático del CRM? ¿O realmente la segmentación de las campañas es tan efectiva?
+## Pendientes abiertos (V1 — contexto histórico)
 
-## 4. Nombre de formulario: mismo patrón
+Los siguientes puntos fueron identificados en la V1 del EDA. Algunos ya están resueltos por los cambios de la V2 (eliminación del chatbot, filtrado por 2025), pero se conservan como referencia.
 
-- Los formularios específicos de vehículo (`MX_Renault_2025_Kwid_Lead`, `MX_Renault_2026_Oroch_Lead`, etc.) convierten al **99-100%**, mientras que el formulario genérico `ONE-PR` convierte solo al **52%**.
-- **Pregunta:** ¿Los formularios específicos están vinculados a campañas pagas (Facebook/Meta)? Si es así, la alta conversión podría estar explicada por el canal, no por el formulario en sí. Validar si formulario, campaña y origen son variables redundantes.
+### 1. Origen de creación: Facebook convierte al 99.3% (V1)
+
+- En la V1, los leads con `origen_creacion = Facebook` tenían una tasa de conversión del **99.3%**.
+- **Estado:** Parcialmente explicado. En la V2 (datos 2025 sin chatbot) los orígenes de Facebook se normalizaron. La alta conversión de V1 estaba inflada por la mezcla con datos del chatbot.
+
+### 2. Vehículos de interés con conversión ~100% (V1)
+
+- En la V1, DUSTER, KOLEOS, LOGAN, etc. tenían tasas cercanas al 100%.
+- **Estado:** Parcialmente resuelto. En la V2, al filtrar solo 2025 y eliminar Arkana/Oroch pre-clasificados, las tasas se normalizan. KWID sigue siendo el vehículo con tasa más baja (36.3% via ONE-PR), lo cual es un patrón real de negocio (vehículo de entrada, leads más exploratorios).
+
+### 3. Campañas con conversión ~100% (V1)
+
+- **Estado:** Explicado parcialmente por el proceso de pre-clasificación de Arkana/Oroch. Las campañas restantes tienen tasas consistentes con la operación real.
+
+### 4. Nombre de formulario = campaña (redundancia)
+
+- Confirmado: cada formulario `MX_Renault_*` tiene 1 sola campaña asociada.
+- **Acción pendiente:** Evaluar si eliminar `nombre_formulario` o `campana` como feature del modelo para evitar redundancia.
