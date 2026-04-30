@@ -1,0 +1,43 @@
+# Reglas del proyecto — predictivo_ml_leads
+# Este archivo se carga automáticamente en CADA conversación de Windsurf/Cascade.
+
+## Contexto rápido
+- App Streamlit de clasificación de leads (Hot/Cold) para Renault México.
+- Modelo: Random Forest local (models/best_model.joblib). Sin LLM externo, todo offline.
+- Stack: Streamlit + scikit-learn + SHAP + SQLite + category_encoders.
+- Entorno: .venv (Python 3.13), Windows.
+- Arranque: `.venv\Scripts\python.exe -m streamlit run streamlit_app/app.py`
+
+## Arquitectura del código
+- `streamlit_app/app.py` — Punto de entrada.
+- `streamlit_app/core/inference.py` — Pipeline: Excel → predicciones (fix_encoding → extract_date → select_columns → clean_nulls → feature_engineering → predict_proba).
+- `streamlit_app/core/memory.py` — SQLite: save_session, get_sessions, get_trend_data.
+- `streamlit_app/core/shap_explainer.py` — Explicaciones SHAP por lead.
+- `streamlit_app/components/` — UI: upload, results_grid, lead_detail, model_report, history.
+- `src/train.py` — Entrenamiento. `src/predict.py` — Inferencia CLI. `src/save_artifacts.py` — Genera preprocessing_config.joblib.
+- `notebooks/` — 00_data_engineering, 01_eda, 02_feature_engineering, 03_modeling (todos V2).
+
+## Parámetros críticos
+- Umbral de clasificación: 0.35 (en artifacts["umbral"])
+- MODEL_PATH: models/best_model.joblib
+- ARTIFACTS_PATH: models/preprocessing_config.joblib
+- DB_PATH: data/memory/history.db
+
+## Reglas de ahorro de tokens
+1. ANTES de buscar archivos con grep/find, lee `graphify-out/GRAPH_REPORT.md` para navegar por estructura.
+2. No leas notebooks completos. Lee solo las celdas específicas que necesites modificar.
+3. Lee `CONTEXTO.md` solo si necesitas info que NO está en este archivo.
+4. Lee `PENDIENTES_VALIDACION.md` solo si el usuario pregunta por decisiones de negocio o data leakage.
+5. Usa Context7 (MCP) para consultar docs de librerías en lugar de adivinar APIs.
+6. Minimiza lecturas redundantes: si ya leíste un archivo en esta sesión, no lo releas.
+
+## Reglas de workflow
+- NUNCA hacer git commit/push sin preguntar al usuario primero.
+- Código en español para comentarios de negocio, inglés para código técnico.
+- Seguir Clean Code: legible, mantenible, fácil de entender.
+
+## Decisiones de negocio vigentes
+- Leads de Arkana (MX_Renault_0125_Arkana_Lead) y Oroch (MX_Renault_0125_Oroch_Lead) eliminados del training por data leakage (validado con equipo comercial, Abril 2026).
+- `nombre_formulario` y `campana` son redundantes para formularios MX_Renault (relación 1:1).
+- Meses excluidos del dataset: Abril, Mayo, Junio 2025 (anómalos).
+- Leads del chatbot eliminados (plataforma CHATBOT).
