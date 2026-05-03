@@ -1485,7 +1485,8 @@ def _render_evaluation(report):
         plt.tight_layout()
         col_shap1.pyplot(fig)
         plt.close()
-        _chart_explainer(
+        with col_shap1:
+            _chart_explainer(
             "Este gráfico de barras muestra el impacto promedio absoluto de cada feature en la predicción. Las features más arriba son las que más mueven la aguja del modelo, sea para bien o para mal.",
             "Permite confirmar a alto nivel qué variables son las más influyentes en el modelo.",
             "En V2, las features son más limpias y representativas del negocio real, a diferencia de V1 donde el leakage podía dominar."
@@ -1495,7 +1496,8 @@ def _render_evaluation(report):
         shap.plots.beeswarm(shap_values, max_display=15, show=False)
         plt.tight_layout()
         col_shap2.pyplot(fig)
-        _chart_explainer(
+        with col_shap2:
+            _chart_explainer(
             "Cada punto es un lead. El color indica el valor de la feature (rojo=alto, azul=bajo). El eje X muestra el impacto SHAP: valores positivos empujan hacia 'Hot', negativos hacia 'Cold'.",
             "Permite ver no solo QUÉ features son importantes, sino CÓMO impactan. Por ejemplo, se puede observar si valores altos de una feature (puntos rojos) tienden a tener un impacto positivo (a la derecha).",
             "Este tipo de análisis detallado no se realizó en V1, y es clave en V2 para entender el comportamiento del modelo a nivel de lead individual."
