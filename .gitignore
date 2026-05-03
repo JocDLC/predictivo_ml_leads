@@ -15,37 +15,69 @@ env/
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 
-# Data files (processed files excluded, raw files tracked for reproducibility)
+# ============================================================
+# DATA — PII y archivos pesados
+# ============================================================
+# Raw data con datos personales (nombres, telefonos, correos) — NUNCA subir
+data/raw/
+# Processed CSVs (regenerables desde notebooks)
 data/processed/*.csv
+# Base de datos SQLite de historial (local)
+data/memory/*.db
 
-# Trained models
-models/trained/*.pkl
-models/trained/*.joblib
+# Excel files from Salesforce (too large / PII)
+*.xlsx
+# Exception: test sample files anonimizados para demo
+!data/test/*.xlsx
 
-# MLflow
+# ============================================================
+# MODELOS — binarios regenerables
+# ============================================================
+models/preprocessing_config.joblib
+models/trained/
+
+# ============================================================
+# ESTRUCTURA OBSOLETA (V1)
+# ============================================================
+configs/
+deployment/
+src/api/
+src/data/
+src/features/
+src/models/
+docs/
+
+# ============================================================
+# ARCHIVOS TEMPORALES Y SCRIPTS DE PRUEBA
+# ============================================================
+*.tmp
+*.pdf
+dataset_analysis.txt
+prueba*.py
+create_notebook.py
+create_v2_notebooks.py
+update_00_notebook.py
+scripts/_check_doc.py
+
+# Word temp lock files
+~$*.docx
+
+# ============================================================
+# HERRAMIENTAS LOCALES
+# ============================================================
+# MLflow (legacy)
 mlruns/
 mlflow.db
+
+# Agentes locales
+.agents/
+
+# Graphify converted files con PII (leads crudos convertidos a markdown)
+graphify-out/converted/Leads*
 
 # OS files
 Thumbs.db
 .DS_Store
 
-# Temporary files
-*.tmp
-*.pdf
-dataset_analysis.txt
-prueba.py
-
-# Excel files from Salesforce (too large for git)
-*.xlsx
-# Exception: test sample files for demo/validation
-!data/test/*.xlsx
-
-# Preprocessing artifacts (binary, regenerable con src/save_artifacts.py)
-models/preprocessing_config.joblib
-
-# Base de datos SQLite de historial (local, no compartir)
-data/memory/*.db
-
-# Graphify outputs (generados localmente)
-graphify-out/
+# Backups
+*.bak

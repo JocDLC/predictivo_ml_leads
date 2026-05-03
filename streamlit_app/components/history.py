@@ -7,6 +7,7 @@ gráfico de tendencias y detalle de predicciones por sesión.
 
 import streamlit as st
 import pandas as pd
+import plotly.graph_objects as go
 
 from core.memory import get_sessions, get_session_predictions, get_trend_data, delete_session
 
@@ -19,11 +20,33 @@ def render_trend_chart(df_trend: pd.DataFrame):
         return
 
     chart_data = df_trend[["created_at", "pct_hot"]].copy()
-    chart_data = chart_data.rename(columns={"created_at": "Fecha", "pct_hot": "% Hot"})
-    chart_data["Fecha"] = pd.to_datetime(chart_data["Fecha"])
-    chart_data = chart_data.set_index("Fecha")
+    chart_data["created_at"] = pd.to_datetime(chart_data["created_at"])
 
-    st.line_chart(chart_data, use_container_width=True, color="#FF4B4B")
+    ACCENT = "#00C49A"
+
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=chart_data["created_at"],
+            y=chart_data["pct_hot"],
+            mode="lines+markers",
+            line=dict(color=ACCENT, width=3),
+            name="% Hot Leads",
+            marker=dict(size=8)
+        )
+    )
+
+    fig.update_layout(
+        yaxis_title="% Hot Leads",
+        yaxis=dict(
+            ticksuffix="%",
+            tickformat=".1f",
+        ),
+        margin=dict(l=20, r=20, t=50, b=20),
+        height=350
+    )
+
+    st.plotly_chart(fig, use_container_width=True, key="history_trend_chart")
 
 
 def render_sessions_table(df_sessions: pd.DataFrame) -> int | None:

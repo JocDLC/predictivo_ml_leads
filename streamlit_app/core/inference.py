@@ -12,6 +12,8 @@ import pandas as pd
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 MODEL_PATH = os.path.join(BASE_DIR, "models", "best_model.joblib")
 ARTIFACTS_PATH = os.path.join(BASE_DIR, "models", "preprocessing_config.joblib")
+DEFAULT_UMBRAL = 0.325
+LEGACY_UMBRAL = 0.35
 
 DIAS_SEMANA_EN_ES = {
     "Monday": "lunes",
@@ -55,6 +57,31 @@ def load_model_and_artifacts():
     model = joblib.load(MODEL_PATH)
     artifacts = joblib.load(ARTIFACTS_PATH)
     return model, artifacts
+
+
+def resolve_umbral(artifacts):
+    stored = artifacts.get("umbral")
+    if stored is None:
+        return DEFAULT_UMBRAL
+
+    try:
+        value = float(stored)
+    except (TypeError, ValueError):
+        return DEFAULT_UMBRAL
+
+    return DEFAULT_UMBRAL if np.isclose(value, LEGACY_UMBRAL) else value
+
+
+def get_expected_features(model, artifacts):
+    expected_features = list(getattr(model, "feature_names_in_", []))
+    if expected_features:
+        return expected_features
+
+    training_columns = artifacts.get("training_columns", [])
+    if training_columns:
+        return training_columns
+
+    raise ValueError("No fue posible determinar las columnas esperadas por el modelo.")
 
 
 def extract_date_features(df):
@@ -142,11 +169,29 @@ def clean_nulls(df):
     return df
 
 
-def apply_feature_engineering(df, artifacts):
+def transform_with_encoder(encoder, series):
+    transformed = encoder.transform(series)
+
+    if isinstance(transformed, pd.DataFrame):
+        if series.name in transformed.columns:
+            transformed = transformed[series.name]
+        else:
+            transformed = transformed.iloc[:, 0]
+
+    if isinstance(transformed, pd.Series):
+        return pd.to_numeric(transformed, errors="coerce")
+
+    return pd.to_numeric(pd.Series(transformed, index=series.index), errors="coerce")
+
+
+def apply_feature_engineering(df, artifacts, expected_features):
     known_cats = artifacts["known_categories"]
     conc_means = artifacts["concesionario_means"]
     global_mean = artifacts["global_mean"]
-    training_cols = artifacts["training_columns"]
+    bayesian_encoders = artifacts.get("bayesian_encoders", {})
+
+    df = df.copy()
+    df_model = pd.DataFrame(index=df.index)
 
     df["es_fin_de_semana"] = df["dia_semana_creacion"].isin(
         ["sábado", "domingo"]
@@ -157,16 +202,53 @@ def apply_feature_engineering(df, artifacts):
         if col in df.columns:
             df.loc[~df[col].isin(valid_cats), col] = "otros"
 
-    df["concesionario_target_enc"] = (
-        df["concesionario"].map(conc_means).fillna(global_mean)
-    )
-    df = df.drop(columns=["concesionario"])
+    df_model["mes_creacion"] = pd.to_numeric(df["mes_creacion"], errors="coerce")
+    df_model["dia_creacion"] = pd.to_numeric(df["dia_creacion"], errors="coerce")
+    df_model["hora_creacion"] = pd.to_numeric(df["hora_creacion"], errors="coerce")
+    df_model["es_fin_de_semana"] = df["es_fin_de_semana"]
 
-    onehot_cols = list(df.select_dtypes(include="object").columns)
-    df = pd.get_dummies(df, columns=onehot_cols, drop_first=True, dtype=int)
-    df = df.reindex(columns=training_cols, fill_value=0)
+    concesionario_encoded = df["concesionario"].map(conc_means).fillna(global_mean)
+    if "concesionario" in expected_features:
+        df_model["concesionario"] = concesionario_encoded
+    if "concesionario_target_enc" in expected_features:
+        df_model["concesionario_target_enc"] = concesionario_encoded
 
-    return df
+    encoded_columns = ["nombre_formulario", "campana", "vehiculo_interes", "origen"]
+    for col in encoded_columns:
+        encoder = bayesian_encoders.get(col)
+        if encoder is None:
+            continue
+
+        encoded_values = transform_with_encoder(encoder, df[col])
+        if col in expected_features:
+            df_model[col] = encoded_values
+        if f"{col}_bayes_enc" in expected_features:
+            df_model[f"{col}_bayes_enc"] = encoded_values
+
+    one_hot_specs = {
+        "origen_creacion": "origen_creacion",
+        "dia_semana_creacion": "dia_semana_creacion",
+        "franja_horaria": "franja_horaria",
+    }
+
+    for source_col, prefix in one_hot_specs.items():
+        prefixed_expected = [feature for feature in expected_features if feature.startswith(f"{prefix}_")]
+        if prefixed_expected:
+            dummies = pd.get_dummies(df[source_col], prefix=prefix, drop_first=True, dtype=int)
+            for feature in prefixed_expected:
+                df_model[feature] = dummies.get(feature, pd.Series(0, index=df.index, dtype=int))
+
+        encoder = bayesian_encoders.get(source_col)
+        bayes_feature_name = f"{source_col}_bayes_enc"
+        if encoder is not None and bayes_feature_name in expected_features:
+            df_model[bayes_feature_name] = transform_with_encoder(encoder, df[source_col])
+
+    df_model = df_model.reindex(columns=expected_features, fill_value=0)
+
+    for col in df_model.columns:
+        df_model[col] = pd.to_numeric(df_model[col], errors="coerce").fillna(0)
+
+    return df_model
 
 
 def run_inference(uploaded_file, umbral=None):
@@ -183,8 +265,9 @@ def run_inference(uploaded_file, umbral=None):
         stats: dict con estadísticas del proceso
     """
     model, artifacts = load_model_and_artifacts()
+    expected_features = get_expected_features(model, artifacts)
     if umbral is None:
-        umbral = artifacts["umbral"]
+        umbral = resolve_umbral(artifacts)
 
     df = pd.read_excel(uploaded_file)
     df.columns = [fix_encoding(c) for c in df.columns]
@@ -211,7 +294,7 @@ def run_inference(uploaded_file, umbral=None):
     df_display = df.copy()
 
     df = clean_nulls(df)
-    df_model = apply_feature_engineering(df, artifacts)
+    df_model = apply_feature_engineering(df, artifacts, expected_features)
 
     y_proba = model.predict_proba(df_model)[:, 1]
     y_pred = (y_proba >= umbral).astype(int)

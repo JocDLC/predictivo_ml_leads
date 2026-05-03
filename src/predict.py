@@ -183,43 +183,99 @@ def clean_nulls(df):
     return df
 
 
-def apply_feature_engineering(df, artifacts):
+def get_expected_features(model, artifacts):
+    expected_features = list(getattr(model, "feature_names_in_", []))
+    if expected_features:
+        return expected_features
+
+    training_columns = artifacts.get("training_columns", [])
+    if training_columns:
+        return training_columns
+
+    raise ValueError("No fue posible determinar las columnas esperadas por el modelo.")
+
+
+def transform_with_encoder(encoder, series):
+    transformed = encoder.transform(series)
+
+    if isinstance(transformed, pd.DataFrame):
+        if series.name in transformed.columns:
+            transformed = transformed[series.name]
+        else:
+            transformed = transformed.iloc[:, 0]
+
+    if isinstance(transformed, pd.Series):
+        return pd.to_numeric(transformed, errors="coerce")
+
+    return pd.to_numeric(pd.Series(transformed, index=series.index), errors="coerce")
+
+
+def apply_feature_engineering(df, artifacts, expected_features):
     """Aplica feature engineering: derivadas, agrupación, encoding."""
     known_cats = artifacts["known_categories"]
     conc_means = artifacts["concesionario_means"]
     global_mean = artifacts["global_mean"]
-    bayesian_encoders = artifacts.get("bayesian_encoders", {}) # Clave para v2
-    training_cols = artifacts["training_columns"]
+    bayesian_encoders = artifacts.get("bayesian_encoders", {})
 
-    # Features derivadas
+    df = df.copy()
+    df_model = pd.DataFrame(index=df.index)
+
     df["es_fin_de_semana"] = df["dia_semana_creacion"].isin(
         ["sábado", "domingo"]
     ).astype(int)
-    df = df.drop(columns=["dia_semana_creacion"])
     df["franja_horaria"] = df["hora_creacion"].apply(clasificar_franja)
 
-    # Agrupar categorías desconocidas en "otros"
     for col, valid_cats in known_cats.items():
         if col in df.columns:
             df.loc[~df[col].isin(valid_cats), col] = "otros"
 
-    # Target encoding para concesionario
-    df["concesionario_target_enc"] = (
-        df["concesionario"].map(conc_means).fillna(global_mean)
-    )
-    df = df.drop(columns=["concesionario"])
+    df_model["mes_creacion"] = pd.to_numeric(df["mes_creacion"], errors="coerce")
+    df_model["dia_creacion"] = pd.to_numeric(df["dia_creacion"], errors="coerce")
+    df_model["hora_creacion"] = pd.to_numeric(df["hora_creacion"], errors="coerce")
+    df_model["es_fin_de_semana"] = df["es_fin_de_semana"]
 
-    # --- MODELO v2: Bayesian Encoding ---
-    # Aplicar encoders Bayesianos guardados en los artefactos
-    for col, encoder in bayesian_encoders.items():
-        if col in df.columns:
-            df[f"{col}_bayes_enc"] = encoder.transform(df[col])
-            df = df.drop(columns=[col]) # Eliminar la columna original
+    concesionario_encoded = df["concesionario"].map(conc_means).fillna(global_mean)
+    if "concesionario" in expected_features:
+        df_model["concesionario"] = concesionario_encoded
+    if "concesionario_target_enc" in expected_features:
+        df_model["concesionario_target_enc"] = concesionario_encoded
 
-    # Alinear con columnas de entrenamiento
-    df = df.reindex(columns=training_cols, fill_value=0)
+    encoded_columns = ["nombre_formulario", "campana", "vehiculo_interes", "origen"]
+    for col in encoded_columns:
+        encoder = bayesian_encoders.get(col)
+        if encoder is None:
+            continue
 
-    return df
+        encoded_values = transform_with_encoder(encoder, df[col])
+        if col in expected_features:
+            df_model[col] = encoded_values
+        if f"{col}_bayes_enc" in expected_features:
+            df_model[f"{col}_bayes_enc"] = encoded_values
+
+    one_hot_specs = {
+        "origen_creacion": "origen_creacion",
+        "dia_semana_creacion": "dia_semana_creacion",
+        "franja_horaria": "franja_horaria",
+    }
+
+    for source_col, prefix in one_hot_specs.items():
+        prefixed_expected = [feature for feature in expected_features if feature.startswith(f"{prefix}_")]
+        if prefixed_expected:
+            dummies = pd.get_dummies(df[source_col], prefix=prefix, drop_first=True, dtype=int)
+            for feature in prefixed_expected:
+                df_model[feature] = dummies.get(feature, pd.Series(0, index=df.index, dtype=int))
+
+        encoder = bayesian_encoders.get(source_col)
+        bayes_feature_name = f"{source_col}_bayes_enc"
+        if encoder is not None and bayes_feature_name in expected_features:
+            df_model[bayes_feature_name] = transform_with_encoder(encoder, df[source_col])
+
+    df_model = df_model.reindex(columns=expected_features, fill_value=0)
+
+    for col in df_model.columns:
+        df_model[col] = pd.to_numeric(df_model[col], errors="coerce").fillna(0)
+
+    return df_model
 
 
 # ─────────────────────────── Main ───────────────────────────
@@ -234,6 +290,7 @@ def predict(input_path, output_path=None):
     print(f"\nCargando modelo y artefactos...")
     model = joblib.load(MODEL_PATH)
     artifacts = joblib.load(ARTIFACTS_PATH)
+    expected_features = get_expected_features(model, artifacts)
     umbral = artifacts["umbral"]
     print(f"  Modelo: {type(model).__name__}")
     print(f"  Umbral: {umbral}")
@@ -274,7 +331,7 @@ def predict(input_path, output_path=None):
     print(f"  Leads a evaluar: {len(df):,}")
 
     print(f"\nAplicando feature engineering...")
-    df_model = apply_feature_engineering(df, artifacts)
+    df_model = apply_feature_engineering(df, artifacts, expected_features)
 
     print(f"\nGenerando predicciones...")
     y_proba = model.predict_proba(df_model)[:, 1]
