@@ -1,45 +1,96 @@
-# Predictivo ML Leads — Lead Scoring para Sales & Marketing Automotriz
+# Predictivo ML Leads — Lead Scoring para Renault México
 
-Proyecto final de Machine Learning e IA. Sistema predictivo de clasificación binaria para determinar la probabilidad de conversión de leads del sector automotriz (Renault México).
+Sistema predictivo de clasificación binaria (Hot / Cold) para priorizar leads del sector automotriz. Proyecto final de Machine Learning e IA.
 
 ## Contexto del Negocio
 
-Una agencia en México realiza campañas de marketing digital para que personas interesadas en vehículos completen un formulario. Estos leads son contactados por un equipo de Sales & Marketing que los filtra. Los leads calificados como "interesados" se derivan al concesionario para cerrar la venta.
+Renault México recibe leads desde formularios web, plataformas de marketing y otras fuentes digitales. Sin un mecanismo automático de priorización, el equipo comercial dedica tiempo equivalente a oportunidades con alta intención de compra y a contactos fríos o de baja calidad.
 
-**Objetivo:** Predecir si un lead será calificado como "Contacto interesado" (derivado al concesionario) o será rechazado, optimizando la priorización del equipo de ventas.
+**Objetivo:** Clasificar automáticamente cada lead como **Hot** (alta probabilidad de conversión) o **Cold**, y explicar la predicción con SHAP para que el equipo comercial confíe en el modelo.
+
+---
+
+## Stack Tecnológico
+
+| Capa | Tecnología |
+|---|---|
+| Backend / lógica | Python 3.13, scikit-learn |
+| Frontend / UI | Streamlit + Plotly |
+| Modelo | GradientBoostingClassifier (.joblib) |
+| Explicabilidad | SHAP (TreeExplainer) |
+| Base de datos | SQLite (historial local) |
+| Encoding | category_encoders (Bayesian Target Encoding) |
 
 ---
 
 ## Estructura del Proyecto
 
-```bash
+```
 predictivo_ml_leads/
-├── configs/                # Configuración YAML del mejor modelo
 ├── data/
-│   ├── raw/                # Datos originales sin procesar
-│   └── processed/          # Datos limpios y con features
-├── deployment/
-│   └── mlflow/             # Docker Compose para MLflow
+│   ├── raw/                           → Insumos crudos y snapshots locales
+│   ├── processed/                     → leads_cleaned.csv, X_train_v2.csv, X_test_v2.csv, y_train_v2.csv, y_test_v2.csv
+│   ├── memory/history.db              → Historial SQLite de la app
+│   └── test/                          → Archivos de prueba para inferencia
 ├── models/
-│   └── trained/            # Modelo y preprocessor exportados (.pkl)
+│   ├── best_model.joblib              → GradientBoostingClassifier desplegado
+│   └── preprocessing_config.joblib    → Artefactos de preprocesamiento (umbral legacy 0.35)
 ├── notebooks/
-│   ├── 00_data_engineering.ipynb
-│   ├── 01_exploratory_data_analysis.ipynb
-│   ├── 02_feature_engineering.ipynb
-│   └── 03_model_experimentation.ipynb
+│   ├── 00_data_engineering_v2_2025.ipynb
+│   ├── 01_exploratory_data_analysis_v2.ipynb
+│   ├── 02_feature_engineering_v2.ipynb
+│   ├── 03_modeling_v2.ipynb
+│   ├── 04_evaluation_v2.ipynb
+│   └── v1/                            → Notebooks legacy de referencia histórica
+├── streamlit_app/
+│   ├── app.py                         → Entrada principal de la app
+│   ├── core/
+│   │   ├── inference.py               → Pipeline de inferencia vigente
+│   │   ├── memory.py                  → Persistencia SQLite
+│   │   ├── shap_explainer.py          → Explicación SHAP por lead
+│   │   └── theme.py                   → CSS custom para temas claro/oscuro
+│   └── components/
+│       ├── upload.py                  → Widget de carga de archivos
+│       ├── results_grid.py            → Grilla de resultados con filtros
+│       ├── lead_detail.py             → Detalle individual con SHAP
+│       ├── model_report.py            → Reporte completo del modelo (5 tabs)
+│       └── history.py                 → Historial de sesiones
 ├── src/
-│   ├── data/               # Script de limpieza/preprocesamiento
-│   ├── features/           # Script de ingeniería de features
-│   ├── models/             # Script de entrenamiento
-│   └── api/                # FastAPI para servir predicciones
-├── streamlit_app/          # UI interactiva
-├── requirements.txt
+│   ├── predict.py                     → Flujo CLI / soporte programático
+│   ├── save_artifacts.py              → Generación de preprocessing_config.joblib
+│   └── train.py                       → Script de entrenamiento (legacy RF)
+├── graphify-out/                      → Análisis de grafos del código
+├── PENDIENTES_VALIDACION.md           → Estado de validaciones de leakage
+├── CONTEXTO.md                        → Contexto general del proyecto
+├── requirements.txt                   → Dependencias Python
 └── README.md
 ```
 
 ---
 
-## ⚡ Instalación rápida (nuevo equipo)
+## Métricas del Modelo (Test — Umbral 0.325)
+
+| Métrica | Valor |
+|---|---|
+| ROC-AUC | 0.7828 |
+| Accuracy | 0.6947 |
+| Precision (Hot) | 0.5604 |
+| Recall (Hot) | 0.6992 |
+| F1 (Hot) | 0.6221 |
+
+---
+
+## Dataset V2
+
+- **Fuente:** Exportación Salesforce CRM — Leads México (2025)
+- **Registros limpios:** 58,546 leads (tras excluir chatbot, meses anómalos, leakage Arkana/Oroch y duplicados)
+- **Target:** `target` → 1 = Hot Lead (Contacto interesado), 0 = Cold Lead
+- **Features finales:** 22 (temporales, vehículo, origen, concesionario, formulario, campaña — con Bayesian Target Encoding y One-Hot)
+- **Split:** 80/20 estratificado (train: 46,836 — test: 11,710)
+
+---
+
+## ⚡ Instalación rápida
 
 ### 1. Clonar el repositorio
 ```powershell
@@ -61,43 +112,31 @@ pip install -r requirements.txt
 Acceder en: **http://localhost:8501**
 
 ### Requisitos del sistema
-- Python 3.11+ (probado con 3.14)
+- Python 3.11+ (probado con 3.13)
 - Git
 - ~500 MB de espacio (dependencias)
 
 ---
 
-## Flujo de Trabajo
+## Flujo de Trabajo (Notebooks V2)
 
-1. **Data Engineering** — Limpieza, fix encoding, manejo de nulos
-2. **EDA** — Análisis exploratorio, distribuciones, correlaciones
-3. **Feature Engineering** — Creación de variables, encoding, scaling
-4. **Experimentación** — Competencia de modelos (LogReg, RF, GB, XGB, SVM)
-5. **Despliegue** — API FastAPI + UI Streamlit
-
-## Modelos Candidatos
-
-| Modelo | Tipo |
-|---|---|
-| LogisticRegression | Baseline lineal |
-| RandomForestClassifier | Ensemble bagging |
-| GradientBoostingClassifier | Ensemble boosting |
-| XGBClassifier | Gradient boosting optimizado |
-| SVC | Support Vector Machine |
-
-## Métricas de Evaluación
-
-- Accuracy, Precision, Recall, F1-Score, AUC-ROC
+1. **00 — Data Engineering** → Limpieza, fix encoding, exclusión de leakage, filtro 2025
+2. **01 — EDA** → Análisis exploratorio, distribuciones, correlaciones, patrones temporales
+3. **02 — Feature Engineering** → Bayesian Target Encoding, One-Hot, split estratificado
+4. **03 — Modeling** → Comparación de 4 modelos (LogReg, RF, GB, LightGBM) → Ganador: GradientBoosting
+5. **04 — Evaluation** → Métricas, matriz de confusión, comparación de umbrales, SHAP
 
 ---
 
-## Dataset
+## Modelos Evaluados
 
-- **Fuente:** CRM de leads automotriz (Renault México)
-- **Registros:** 13,516 leads
-- **Target:** `Cualificación` → Binario (Contacto interesado = 1, Rechazo = 0)
-- **Features:** 28 columnas originales (temporales, campaña, vehículo, origen, concesionario, etc.)
+| Modelo | ROC-AUC | F1 | Resultado |
+|---|---|---|---|
+| Logistic Regression | 0.742 | 0.513 | Baseline |
+| Random Forest | 0.770 | 0.573 | — |
+| **Gradient Boosting** | **0.779** | **0.586** | **★ Desplegado** |
+| LightGBM | 0.777 | 0.581 | — |
 
 ---
 
-**Proyecto Final — Curso de Machine Learning e IA**
+**Proyecto Final — Curso de Machine Learning e IA — v2.2 (Mayo 2026)**

@@ -154,6 +154,7 @@ def render_shap_chart(explanation_df):
     align-items: center;
     margin-bottom: 4px;
     font-size: 0.85rem;
+    color: var(--st-text-color, inherit);
 }
 .shap-feature-name {
     font-weight: 500;
@@ -161,13 +162,17 @@ def render_shap_chart(explanation_df):
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 60%;
+    color: var(--st-text-color, inherit);
 }
-.shap-feature-val { font-weight: 600; }
+.shap-feature-val {
+    font-weight: 600;
+    color: var(--st-text-color, inherit);
+}
 .shap-val-hot  { color: #ef4444; }
 .shap-val-cold { color: #3b82f6; }
 .shap-bar-bg {
     width: 100%;
-    background-color: rgba(150,150,150,0.25);
+    background-color: var(--st-border-color, rgba(150,150,150,0.25));
     height: 6px;
     border-radius: 4px;
     position: relative;
