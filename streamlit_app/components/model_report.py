@@ -531,9 +531,9 @@ def _render_eda(df, report):
         st.plotly_chart(bar, use_container_width=True, key="eda_dataset_target_bar")
 
     _chart_explainer(
-        "La gráfica de pastel (izquierda) muestra la proporción de leads 'Hot' (oportunidades reales) vs 'Cold' (descartes). La gráfica de barras (derecha) muestra el conteo absoluto para cada clase.",
-        "El dataset está desbalanceado: hay muchos más leads 'Cold' que 'Hot'. Esto es típico en la generación de leads, pero requiere que el modelo sea evaluado con métricas como F1 o Recall, no solo Accuracy.",
-        "El pipeline V2 es más estricto, resultando en una tasa de 'Hot' más baja pero más realista que en V1, que estaba inflada por data leakage. El modelo V2 aprende de una distribución más limpia."
+        "La grÃ¡fica de pastel (izquierda) muestra la proporciÃ³n de leads 'Hot' (oportunidades reales) vs 'Cold' (descartes). La grÃ¡fica de barras (derecha) muestra el conteo absoluto para cada clase.",
+        "El dataset estÃ¡ desbalanceado: hay muchos mÃ¡s leads 'Cold' que 'Hot'. Esto es tÃ­pico en la generaciÃ³n de leads, pero requiere que el modelo sea evaluado con mÃ©tricas como F1 o Recall, no solo Accuracy.",
+        "El pipeline V2 es mÃ¡s estricto, resultando en una tasa de 'Hot' mÃ¡s baja pero mÃ¡s realista que en V1, que estaba inflada por data leakage. El modelo V2 aprende de una distribuciÃ³n mÃ¡s limpia."
     )
 
     st.subheader("2.2 Patrones temporales (Volumen y Conversion)")
@@ -551,9 +551,9 @@ def _render_eda(df, report):
         _plotly_layout(fig_hora)
         st.plotly_chart(fig_hora, use_container_width=True, key="eda_hora")
         _chart_explainer(
-            "La gráfica combina barras de volumen (eje izquierdo) con una línea de tasa de conversión (eje derecho) para cada hora del día. La línea punteada es la tasa de conversión promedio global.",
-            "El mayor volumen de leads entra entre las 9am y 7pm. Sin embargo, la tasa de conversión es notablemente más alta en la madrugada (0-5am), cuando el volumen es bajo. Estos leads nocturnos, aunque pocos, son de alta calidad.",
-            "El patrón de V2 es similar al de V1, pero la creación de la feature `franja_horaria` en el pipeline V2 ayuda al modelo a capturar explícitamente el valor de los leads de madrugada/noche."
+            "La grÃ¡fica combina barras de volumen (eje izquierdo) con una lÃ­nea de tasa de conversiÃ³n (eje derecho) para cada hora del dÃ­a. La lÃ­nea punteada es la tasa de conversiÃ³n promedio global.",
+            "El mayor volumen de leads entra entre las 9am y 7pm. Sin embargo, la tasa de conversiÃ³n es notablemente mÃ¡s alta en la madrugada (0-5am), cuando el volumen es bajo. Estos leads nocturnos, aunque pocos, son de alta calidad.",
+            "El patrÃ³n de V2 es similar al de V1, pero la creaciÃ³n de la feature `franja_horaria` en el pipeline V2 ayuda al modelo a capturar explÃ­citamente el valor de los leads de madrugada/noche."
         )
 
     with tab_dia:
@@ -569,9 +569,9 @@ def _render_eda(df, report):
         _plotly_layout(fig_dia)
         st.plotly_chart(fig_dia, use_container_width=True, key="eda_dia")
         _chart_explainer(
-            "Compara el volumen de leads y la tasa de conversión para cada día de la semana. La línea punteada es la conversión promedio.",
-            "El volumen es mayor en días de semana, pero la conversión tiende a ser ligeramente superior los fines de semana (sábado y domingo), cuando los prospectos tienen más tiempo para investigar.",
-            "Este patrón se mantiene consistente entre V1 y V2. La feature `es_fin_de_semana` en el pipeline V2 capitaliza este hallazgo."
+            "Compara el volumen de leads y la tasa de conversiÃ³n para cada dÃ­a de la semana. La lÃ­nea punteada es la conversiÃ³n promedio.",
+            "El volumen es mayor en dÃ­as de semana, pero la conversiÃ³n tiende a ser ligeramente superior los fines de semana (sÃ¡bado y domingo), cuando los prospectos tienen mÃ¡s tiempo para investigar.",
+            "Este patrÃ³n se mantiene consistente entre V1 y V2. La feature `es_fin_de_semana` en el pipeline V2 capitaliza este hallazgo."
         )
 
     with tab_mes:
@@ -589,12 +589,12 @@ def _render_eda(df, report):
             _plotly_layout(fig_mes)
             st.plotly_chart(fig_mes, use_container_width=True, key="eda_mes")
             _chart_explainer(
-                "Compara el volumen y la tasa de conversión a lo largo de los meses disponibles en el dataset de entrenamiento.",
-                "Se observan picos de conversión en meses específicos, posiblemente ligados a campañas o estacionalidad del mercado. El volumen puede variar drásticamente, como se ve en los meses de verano.",
-                "El pipeline V2 excluye explícitamente los meses de Abril, Mayo y Junio de 2025 por presentar un comportamiento anómalo que afectaba negativamente el rendimiento del modelo V1."
+                "Compara el volumen y la tasa de conversiÃ³n a lo largo de los meses disponibles en el dataset de entrenamiento.",
+                "Se observan picos de conversiÃ³n en meses especÃ­ficos, posiblemente ligados a campaÃ±as o estacionalidad del mercado. El volumen puede variar drÃ¡sticamente, como se ve en los meses de verano.",
+                "El pipeline V2 excluye explÃ­citamente los meses de Abril, Mayo y Junio de 2025 por presentar un comportamiento anÃ³malo que afectaba negativamente el rendimiento del modelo V1."
             )
         else:
-            st.info("No se encontró la columna 'mes_creacion' en el dataset.")
+            st.info("No se encontrÃ³ la columna 'mes_creacion' en el dataset.")
 
     madrugada = df[df["hora_creacion"].between(0, 5)]["target"].mean() * 100
     best_day = conv_dia["mean"].idxmax()
@@ -653,9 +653,9 @@ def _render_eda(df, report):
     _plotly_layout(fig_hm, 400)
     st.plotly_chart(fig_hm, use_container_width=True, key="eda_hm")
     _chart_explainer(
-        "El mapa de calor cruza el día de la semana con la hora del día. Puedes alternar entre ver la 'Tasa de Conversión' (donde verde es mejor) y el 'Volumen' (donde azul oscuro es mayor).",
-        "Permite identificar 'horas doradas': momentos con alta conversión y volumen decente (ej. noches de fin de semana) y 'puntos ciegos': horas de alto volumen pero baja calidad (ej. mediodía entre semana).",
-        "En V2, este análisis fue clave para crear la feature `franja_horaria`, que agrupa estos patrones y mejora la capacidad del modelo para distinguir leads de calidad basados en el momento de creación."
+        "El mapa de calor cruza el dÃ­a de la semana con la hora del dÃ­a. Puedes alternar entre ver la 'Tasa de ConversiÃ³n' (donde verde es mejor) y el 'Volumen' (donde azul oscuro es mayor).",
+        "Permite identificar 'horas doradas': momentos con alta conversiÃ³n y volumen decente (ej. noches de fin de semana) y 'puntos ciegos': horas de alto volumen pero baja calidad (ej. mediodÃ­a entre semana).",
+        "En V2, este anÃ¡lisis fue clave para crear la feature `franja_horaria`, que agrupa estos patrones y mejora la capacidad del modelo para distinguir leads de calidad basados en el momento de creaciÃ³n."
     )
 
     st.subheader("2.4 Conversion por feature categorica")
@@ -692,9 +692,9 @@ def _render_eda(df, report):
     _plotly_layout(fig)
     st.plotly_chart(fig, use_container_width=True, key="eda_cat_conv")
     _chart_explainer(
-        "Muestra la tasa de conversión para cada categoría de la variable seleccionada. Las barras en verde superan el promedio global (línea punteada), mientras que las rojas están por debajo.",
-        "Permite identificar qué vehículos, orígenes o campañas generan leads de mayor o menor calidad. Es una herramienta clave para optimizar la inversión en marketing.",
-        "En V2, las categorías con muy pocos leads (y tasas de conversión engañosas del 100% o 0%) son agrupadas en 'otros', limpiando la visualización y permitiendo un análisis más robusto."
+        "Muestra la tasa de conversiÃ³n para cada categorÃ­a de la variable seleccionada. Las barras en verde superan el promedio global (lÃ­nea punteada), mientras que las rojas estÃ¡n por debajo.",
+        "Permite identificar quÃ© vehÃ­culos, orÃ­genes o campaÃ±as generan leads de mayor o menor calidad. Es una herramienta clave para optimizar la inversiÃ³n en marketing.",
+        "En V2, las categorÃ­as con muy pocos leads (y tasas de conversiÃ³n engaÃ±osas del 100% o 0%) son agrupadas en 'otros', limpiando la visualizaciÃ³n y permitiendo un anÃ¡lisis mÃ¡s robusto."
     )
 
     st.subheader("2.5 Fuerza de asociacion con el target")
@@ -727,9 +727,9 @@ def _render_eda(df, report):
     _plotly_layout(fig, 420)
     st.plotly_chart(fig, use_container_width=True, key="eda_cramer")
     _chart_explainer(
-        "Mide la fuerza de asociación entre cada variable categórica y el target (ser 'Hot' o 'Cold'). Un valor cercano a 1 indica una asociación muy fuerte, mientras que cerca de 0 es débil.",
-        "Variables como `vehiculo_interes` y `origen` tienen la mayor capacidad predictiva. Otras, como `dia_semana_creacion`, tienen una asociación más débil por sí solas.",
-        "El análisis de Cramer's V en V2 ayudó a seleccionar las features más relevantes para el modelo, descartando aquellas con bajo poder predictivo que solo añadían ruido en V1."
+        "Mide la fuerza de asociaciÃ³n entre cada variable categÃ³rica y el target (ser 'Hot' o 'Cold'). Un valor cercano a 1 indica una asociaciÃ³n muy fuerte, mientras que cerca de 0 es dÃ©bil.",
+        "Variables como `vehiculo_interes` y `origen` tienen la mayor capacidad predictiva. Otras, como `dia_semana_creacion`, tienen una asociaciÃ³n mÃ¡s dÃ©bil por sÃ­ solas.",
+        "El anÃ¡lisis de Cramer's V en V2 ayudÃ³ a seleccionar las features mÃ¡s relevantes para el modelo, descartando aquellas con bajo poder predictivo que solo aÃ±adÃ­an ruido en V1."
     )
 
     top_cramer = cramers_df.sort_values("V", ascending=False).head(3)
@@ -777,9 +777,9 @@ def _render_eda(df, report):
         _plotly_layout(fig_corr)
         st.plotly_chart(fig_corr, use_container_width=True, key="eda_corr")
         _chart_explainer(
-            "Muestra la correlación lineal de Pearson entre las variables numéricas. Los tonos rojos indican una correlación positiva (si una sube, la otra también), los azules una correlación negativa (si una sube, la otra baja), y los blancos una correlación cercana a cero.",
-            "No se observan correlaciones extremadamente altas entre las features predictivas, lo que es bueno para evitar multicolinealidad. La correlación más fuerte es entre las variables de fecha (día, mes, año), lo cual es esperado.",
-            "En V2, la matriz se ordena por la correlación con el `target`, haciendo más fácil identificar las relaciones más importantes. Además, se excluyen columnas de ID que no aportan valor."
+            "Muestra la correlaciÃ³n lineal de Pearson entre las variables numÃ©ricas. Los tonos rojos indican una correlaciÃ³n positiva (si una sube, la otra tambiÃ©n), los azules una correlaciÃ³n negativa (si una sube, la otra baja), y los blancos una correlaciÃ³n cercana a cero.",
+            "No se observan correlaciones extremadamente altas entre las features predictivas, lo que es bueno para evitar multicolinealidad. La correlaciÃ³n mÃ¡s fuerte es entre las variables de fecha (dÃ­a, mes, aÃ±o), lo cual es esperado.",
+            "En V2, la matriz se ordena por la correlaciÃ³n con el `target`, haciendo mÃ¡s fÃ¡cil identificar las relaciones mÃ¡s importantes. AdemÃ¡s, se excluyen columnas de ID que no aportan valor."
         )
 def _render_feature_engineering(df, report):
     st.header("3. Feature Engineering")
@@ -788,12 +788,9 @@ def _render_feature_engineering(df, report):
     known_categories = artifacts.get("known_categories", {})
     n_features = report["training_context"]["n_features"]
     x_train_cols = list(report["X_train"].columns)
-    bayes_count = int(
-        sum(col.endswith("_bayes_enc") or col.endswith("_target_enc") for col in x_train_cols)
-    )
     one_hot_prefixes = ("origen_creacion_", "dia_semana_creacion_", "franja_horaria_")
     one_hot_count = int(sum(any(col.startswith(prefix) for prefix in one_hot_prefixes) for col in x_train_cols))
-    numeric_derived_count = int(max(n_features - bayes_count - one_hot_count, 0))
+    numeric_derived_count = int(max(n_features - one_hot_count, 0))
 
     st.markdown(
         f"El pipeline actual parte de **{len(df.columns)} columnas limpias** y entrega **{n_features} features** "
@@ -801,7 +798,7 @@ def _render_feature_engineering(df, report):
     )
 
     st.subheader("3.1 Pipeline de transformacion")
-    st.caption("Evolución de las dimensiones: eliminamos fuga de datos (leakage) y compactamos las variables con técnicas de Encoding.")
+    st.caption("EvoluciÃ³n de las dimensiones: eliminamos fuga de datos (leakage) y compactamos las variables con tÃ©cnicas de Encoding.")
     pipeline_df = pd.DataFrame(
         {
             "Paso": ["Crudo (Salesforce)", "Limpio (Sin leakage)", "Features finales (Modelo)"],
@@ -816,13 +813,13 @@ def _render_feature_engineering(df, report):
             marker=dict(color=["#636EFA", ACCENT, GOLD]),
         )
     )
-    fig.update_layout(title="Reducción de dimensionalidad (Columnas)")
+    fig.update_layout(title="ReducciÃ³n de dimensionalidad (Columnas)")
     _plotly_layout(fig, 340)
     st.plotly_chart(fig, use_container_width=True, key="fe_funnel")
     _chart_explainer(
-        "El gráfico muestra cómo se reduce el número de columnas desde el archivo crudo hasta las features finales que recibe el modelo.",
-        "Partimos de 27 columnas, limpiamos hasta quedarnos con 12 variables de negocio relevantes, y tras el encoding (transformación a números), el modelo trabaja con un set final de features optimizadas.",
-        "El pipeline V2 es más agresivo en la selección y transformación de features, utilizando técnicas como Bayesian Encoding para representar información de manera más compacta y efectiva que el One-Hot Encoding simple de V1."
+        "El grÃ¡fico muestra cÃ³mo se reduce el nÃºmero de columnas desde el archivo crudo hasta las features finales que recibe el modelo.",
+        "Partimos de 27 columnas, limpiamos hasta quedarnos con 12 variables de negocio relevantes, y tras el encoding (transformaciÃ³n a nÃºmeros), el modelo trabaja con un set final de features optimizadas.",
+        "El pipeline V2 es mÃ¡s agresivo en la selecciÃ³n y transformaciÃ³n de features, utilizando tÃ©cnicas como One-Hot + variables derivadas para representar informaciÃ³n de manera mÃ¡s compacta y efectiva que el One-Hot Encoding simple de V1."
     )
     with st.expander("Detalle de transformaciones"):
         st.dataframe(
@@ -834,46 +831,17 @@ def _render_feature_engineering(df, report):
                         "Detalle": "Se elimina `subtipo_interes` por riesgo de data leakage (refleja informacion post-clasificacion).",
                     },
                     {"Transformacion": "Agrupacion de categorias", "Detalle": "Categorias fuera de `known_categories` se mapean a `otros`."},
-                    {"Transformacion": "Target/Bayesian encoding", "Detalle": "Se aplican encoders bayesianos para reducir dimensionalidad y ruido."},
+                    {"Transformacion": "Codificacion One-Hot", "Detalle": "Variables categoricas seleccionadas se convierten en columnas binarias (0/1)."},
                     {"Transformacion": "Alineacion final", "Detalle": "El DataFrame se reindexa a las features exactas esperadas por el modelo."},
                 ]
             ),
             use_container_width=True,
             hide_index=True,
         )
-        encoders = artifacts.get("bayesian_encoders", {})
-        if encoders:
-            st.info(f"🎯 **Bayesian Encoders aplicados a:** {', '.join(encoders.keys())}")
-
-    with st.expander("Bayesian Target Encoding (Smoothing)"):
-        st.markdown(
-            """
-            El **Target Encoding con smoothing bayesiano** reemplaza categorias por una tasa de conversion
-            suavizada entre:
-            - media de la categoria (senal local)
-            - media global del dataset (senal estable)
-
-            Esto reduce ruido en categorias raras y evita explosiones de dimensionalidad de un One-Hot puro.
-            """
-        )
-        st.markdown(
-            """
-            **Variables de alta cardinalidad tratadas con Bayesian/Target Encoding (notebook 02):**
-            `vehiculo_interes`, `origen`, `nombre_formulario`, `campana`, `concesionario`.
-            """
-        )
-        st.markdown(
-            """
-            **Variables candidatas a One-Hot en el disenio del notebook 02:**
-            `origen_creacion`, `dia_semana_creacion`, `franja_horaria`.
-            """
-        )
-        st.caption(
-            "Nota: el desglose mostrado abajo refleja el artifact actualmente cargado en produccion."
-        )
+        st.caption("El desglose mostrado abajo refleja el artifact actualmente cargado en produccion.")
 
     st.subheader("3.2 Nueva feature: franja horaria")
-    st.caption("Se derivan las horas en 4 grandes franjas para que el modelo capture mejor el incremento de conversión en la madrugada/noche.")
+    st.caption("Se derivan las horas en 4 grandes franjas para que el modelo capture mejor el incremento de conversiÃ³n en la madrugada/noche.")
     df_temp = df.copy()
     df_temp["franja_horaria"] = df_temp["hora_creacion"].apply(
         lambda hour: "madrugada" if hour < 6 else "manana" if hour < 12 else "tarde" if hour < 18 else "noche"
@@ -896,13 +864,13 @@ def _render_feature_engineering(df, report):
     _plotly_layout(fig, 380)
     st.plotly_chart(fig, use_container_width=True, key="fe_franja")
     _chart_explainer(
-        "La gráfica muestra la tasa de conversión promedio para cada una de las 4 franjas horarias creadas.",
-        "Agrupar las 24 horas en franjas captura un patrón claro: la conversión es más alta en la 'madrugada' y 'noche'. Esta nueva feature es más simple y potente para el modelo que usar la hora individual.",
-        "Esta feature es una de las mejoras clave del pipeline V2. El modelo V1 usaba la hora como una variable numérica simple, perdiendo la oportunidad de capturar estos patrones no lineales."
+        "La grÃ¡fica muestra la tasa de conversiÃ³n promedio para cada una de las 4 franjas horarias creadas.",
+        "Agrupar las 24 horas en franjas captura un patrÃ³n claro: la conversiÃ³n es mÃ¡s alta en la 'madrugada' y 'noche'. Esta nueva feature es mÃ¡s simple y potente para el modelo que usar la hora individual.",
+        "Esta feature es una de las mejoras clave del pipeline V2. El modelo V1 usaba la hora como una variable numÃ©rica simple, perdiendo la oportunidad de capturar estos patrones no lineales."
     )
 
     st.subheader("3.3 Reduccion de categorias")
-    st.caption("Las categorías muy raras (< 1% de aparición) se agrupan en 'otros' para evitar que el modelo las memorice y sufra sobreajuste (overfitting).")
+    st.caption("Las categorÃ­as muy raras (< 1% de apariciÃ³n) se agrupan en 'otros' para evitar que el modelo las memorice y sufra sobreajuste (overfitting).")
     rows = []
     for feature, valid_categories in known_categories.items():
         before = int(df[feature].nunique()) if feature in df.columns else np.nan
@@ -932,13 +900,13 @@ def _render_feature_engineering(df, report):
         _plotly_layout(fig, 340)
         st.plotly_chart(fig, use_container_width=True, key="fe_categories")
         _chart_explainer(
-            "Compara la cantidad de categorías únicas por variable antes (azul+rojo) y después (azul) de la limpieza. Las categorías en rojo son las que se agruparon en 'otros' por ser poco frecuentes.",
-            "Variables como `nombre_formulario` o `campana` tienen cientos de categorías, la mayoría con muy pocos ejemplos. Agruparlas reduce el riesgo de que el modelo 'memorice' casos raros (overfitting).",
-            "El pipeline V2 formaliza este agrupamiento usando un `known_categories.json`, asegurando que el modelo en producción trate las nuevas categorías de forma consistente, a diferencia de V1 que podía fallar ante valores no vistos."
+            "Compara la cantidad de categorÃ­as Ãºnicas por variable antes (azul+rojo) y despuÃ©s (azul) de la limpieza. Las categorÃ­as en rojo son las que se agruparon en 'otros' por ser poco frecuentes.",
+            "Variables como `nombre_formulario` o `campana` tienen cientos de categorÃ­as, la mayorÃ­a con muy pocos ejemplos. Agruparlas reduce el riesgo de que el modelo 'memorice' casos raros (overfitting).",
+            "El pipeline V2 formaliza este agrupamiento usando un `known_categories.json`, asegurando que el modelo en producciÃ³n trate las nuevas categorÃ­as de forma consistente, a diferencia de V1 que podÃ­a fallar ante valores no vistos."
         )
         st.dataframe(reduction_df, use_container_width=True, hide_index=True)
     else:
-        st.info("No se registraron agrupaciones de categorías de baja frecuencia en los artefactos actuales.")
+        st.info("No se registraron agrupaciones de categorÃ­as de baja frecuencia en los artefactos actuales.")
 
     st.subheader("3.4 Dataset final")
     col1, col2, col3 = st.columns(3)
@@ -959,7 +927,6 @@ def _render_feature_engineering(df, report):
     st.subheader("3.5 Desglose de dimensionalidad por tipo de encoding")
     encoding_breakdown_df = pd.DataFrame(
         [
-            {"Tipo": "Bayesian/Target Encoded", "Features": bayes_count},
             {"Tipo": "One-Hot Encoded", "Features": one_hot_count},
             {"Tipo": "Numericas/Derivadas", "Features": numeric_derived_count},
         ]
@@ -968,7 +935,7 @@ def _render_feature_engineering(df, report):
         go.Bar(
             x=encoding_breakdown_df["Tipo"],
             y=encoding_breakdown_df["Features"],
-            marker_color=[ACCENT, "#636EFA", GOLD],
+            marker_color=["#636EFA", GOLD],
             text=encoding_breakdown_df["Features"],
             textposition="outside",
         )
@@ -980,9 +947,9 @@ def _render_feature_engineering(df, report):
     _plotly_layout(fig_dim, 340)
     st.plotly_chart(fig_dim, use_container_width=True, key="fe_encoding_breakdown")
     _chart_explainer(
-        "Desglosa el número total de features que recibe el modelo según la técnica de encoding utilizada.",
-        "La mayoría de las features provienen de la codificación One-Hot de variables como `origen_creacion`. Las variables de alta cardinalidad son tratadas con Bayesian Encoding para controlar la dimensionalidad.",
-        "El modelo V2 introduce el Bayesian Encoding, una técnica más sofisticada que el One-Hot puro usado en V1. Esto permite incluir más información sin crear un número excesivo de columnas, resultando en un modelo más robusto."
+        "Desglosa el nÃºmero total de features que recibe el modelo segÃºn la tÃ©cnica de encoding utilizada.",
+        "La mayorÃ­a de las features provienen de la codificaciÃ³n One-Hot de variables como `origen_creacion`. Las variables de alta cardinalidad son tratadas con One-Hot + variables derivadas para controlar la dimensionalidad.",
+        "El modelo V2 introduce el One-Hot + variables derivadas, una tÃ©cnica mÃ¡s sofisticada que el One-Hot puro usado en V1. Esto permite incluir mÃ¡s informaciÃ³n sin crear un nÃºmero excesivo de columnas, resultando en un modelo mÃ¡s robusto."
     )
     st.dataframe(encoding_breakdown_df, use_container_width=True, hide_index=True)
     st.markdown(
@@ -991,13 +958,7 @@ def _render_feature_engineering(df, report):
         "- **Numericas/Derivadas:** variables numericas directas (por ejemplo `hora_creacion`) "
         "o creadas a partir de otras (`es_fin_de_semana`, `franja_horaria` transformada)."
     )
-    if bayes_count == 0:
-        st.info(
-            "Nota de version: en el pipeline documentado se evalua Target/Bayesian Encoding, "
-            "pero el artifact V2 actualmente desplegado no materializa columnas bayesianas en la matriz final. "
-            "Por eso el desglose muestra `Bayesian/Target Encoded = 0` y la mayor parte de la expansion "
-            "proviene de One-Hot + variables numericas/derivadas."
-        )
+    st.info("Esta vista describe unicamente la composicion real del artifact V2 desplegado.")
 
 
 def _render_modeling(report):
@@ -1038,9 +999,9 @@ def _render_modeling(report):
     _plotly_layout(fig, 430)
     st.plotly_chart(fig, use_container_width=True, key="mod_roc")
     _chart_explainer(
-        "La curva ROC muestra qué tan bueno es el modelo para distinguir entre clases. Un modelo perfecto estaría pegado a la esquina superior izquierda (TPR=1, FPR=0). El área bajo la curva (AUC) resume su rendimiento: 1.0 es perfecto, 0.5 es azar.",
-        f"El modelo actual tiene un AUC de {metrics['ROC-AUC']:.4f}, lo que indica una capacidad de discriminación buena, muy superior al azar.",
-        "El modelo V2 muestra un AUC superior al de V1, gracias a la limpieza de datos más estricta y al feature engineering mejorado, lo que le permite separar mejor las clases."
+        "La curva ROC muestra quÃ© tan bueno es el modelo para distinguir entre clases. Un modelo perfecto estarÃ­a pegado a la esquina superior izquierda (TPR=1, FPR=0). El Ã¡rea bajo la curva (AUC) resume su rendimiento: 1.0 es perfecto, 0.5 es azar.",
+        f"El modelo actual tiene un AUC de {metrics['ROC-AUC']:.4f}, lo que indica una capacidad de discriminaciÃ³n buena, muy superior al azar.",
+        "El modelo V2 muestra un AUC superior al de V1, gracias a la limpieza de datos mÃ¡s estricta y al feature engineering mejorado, lo que le permite separar mejor las clases."
     )
 
     st.subheader("4.3 Importancia de features")
@@ -1062,9 +1023,9 @@ def _render_modeling(report):
         _plotly_layout(fig, 550)
         st.plotly_chart(fig, use_container_width=True, key="mod_importance")
         _chart_explainer(
-            "El gráfico muestra las 20 features que más influyen en las predicciones del modelo. Una barra más larga significa mayor importancia.",
-            "Las variables relacionadas con el vehículo de interés y el origen del lead son consistentemente las más importantes. Features derivadas como `franja_horaria` también demuestran tener un impacto significativo.",
-            "En V2, las importancias son más interpretables. Features que antes dominaban por data leakage (como `subtipo_interes`) han sido eliminadas, revelando los verdaderos drivers de negocio."
+            "El grÃ¡fico muestra las 20 features que mÃ¡s influyen en las predicciones del modelo. Una barra mÃ¡s larga significa mayor importancia.",
+            "Las variables relacionadas con el vehÃ­culo de interÃ©s y el origen del lead son consistentemente las mÃ¡s importantes. Features derivadas como `franja_horaria` tambiÃ©n demuestran tener un impacto significativo.",
+            "En V2, las importancias son mÃ¡s interpretables. Features que antes dominaban por data leakage (como `subtipo_interes`) han sido eliminadas, revelando los verdaderos drivers de negocio."
         )
 
         top5 = feature_importances.head(5)
@@ -1281,9 +1242,9 @@ def _render_evaluation(report):
     gauge_fig.update_layout(height=220, margin=dict(l=10, r=10, t=40, b=10))
     st.plotly_chart(gauge_fig, use_container_width=True, key="eval_gauge")
     _chart_explainer(
-        "Estos medidores muestran las métricas de rendimiento clave del modelo con el umbral de decisión actual. 'Recall' (Sensibilidad) es especialmente importante: mide cuántos leads 'Hot' reales logramos capturar.",
-        f"Con el umbral actual, el modelo captura el {metrics['Recall']:.1%} de los leads 'Hot'. La precisión del {metrics['Precision']:.1%} indica que de los leads que se marcan como 'Hot', ese porcentaje es correcto.",
-        "El modelo V2 fue optimizado para mejorar el Recall sin sacrificar demasiada Precisión, un equilibrio más alineado con los objetivos de negocio que el enfoque de V1, que priorizaba la precisión general (Accuracy)."
+        "Estos medidores muestran las mÃ©tricas de rendimiento clave del modelo con el umbral de decisiÃ³n actual. 'Recall' (Sensibilidad) es especialmente importante: mide cuÃ¡ntos leads 'Hot' reales logramos capturar.",
+        f"Con el umbral actual, el modelo captura el {metrics['Recall']:.1%} de los leads 'Hot'. La precisiÃ³n del {metrics['Precision']:.1%} indica que de los leads que se marcan como 'Hot', ese porcentaje es correcto.",
+        "El modelo V2 fue optimizado para mejorar el Recall sin sacrificar demasiada PrecisiÃ³n, un equilibrio mÃ¡s alineado con los objetivos de negocio que el enfoque de V1, que priorizaba la precisiÃ³n general (Accuracy)."
     )
     with st.expander("Que significa cada metrica en 5.1 (explicado simple)", expanded=False):
         st.markdown(
@@ -1334,9 +1295,9 @@ def _render_evaluation(report):
             hide_index=True,
         )
     _chart_explainer(
-        "La matriz cruza la realidad ('Real') con las predicciones del modelo ('Pred'). Los Falsos Negativos (FN) son oportunidades perdidas, y los Falsos Positivos (FP) son leads fríos que se marcan como calientes.",
-        f"Actualmente, el modelo deja escapar {fn} oportunidades (FN) pero a cambio solo genera {fp} falsas alarmas (FP). Este balance se considera aceptable para la operación.",
-        "El modelo V2, con su umbral ajustado, reduce significativamente los Falsos Negativos en comparación con V1 (que usaba un umbral de 0.5), aceptando un ligero aumento en Falsos Positivos para no perder ventas."
+        "La matriz cruza la realidad ('Real') con las predicciones del modelo ('Pred'). Los Falsos Negativos (FN) son oportunidades perdidas, y los Falsos Positivos (FP) son leads frÃ­os que se marcan como calientes.",
+        f"Actualmente, el modelo deja escapar {fn} oportunidades (FN) pero a cambio solo genera {fp} falsas alarmas (FP). Este balance se considera aceptable para la operaciÃ³n.",
+        "El modelo V2, con su umbral ajustado, reduce significativamente los Falsos Negativos en comparaciÃ³n con V1 (que usaba un umbral de 0.5), aceptando un ligero aumento en Falsos Positivos para no perder ventas."
     )
 
     st.subheader("5.3 Curvas ROC y Precision-Recall")
@@ -1361,9 +1322,9 @@ def _render_evaluation(report):
         _plotly_layout(pr_fig, 380)
         st.plotly_chart(pr_fig, use_container_width=True, key="eval_pr")
     _chart_explainer(
-        "La curva ROC (izquierda) mide la capacidad de separación general del modelo. La curva Precision-Recall (derecha) es más informativa para datasets desbalanceados, mostrando el 'costo' en precisión al intentar aumentar el recall.",
-        "La forma de la curva PR muestra que para capturar más del 80-90% de los leads Hot (alto Recall), la precisión comienza a caer notablemente. El umbral actual busca un punto óptimo en esta curva.",
-        "El modelo V2 tiene un área bajo la curva PR superior a V1, lo que significa que para cualquier nivel de Recall, generalmente se obtiene una mejor Precisión. Es un modelo globalmente superior."
+        "La curva ROC (izquierda) mide la capacidad de separaciÃ³n general del modelo. La curva Precision-Recall (derecha) es mÃ¡s informativa para datasets desbalanceados, mostrando el 'costo' en precisiÃ³n al intentar aumentar el recall.",
+        "La forma de la curva PR muestra que para capturar mÃ¡s del 80-90% de los leads Hot (alto Recall), la precisiÃ³n comienza a caer notablemente. El umbral actual busca un punto Ã³ptimo en esta curva.",
+        "El modelo V2 tiene un Ã¡rea bajo la curva PR superior a V1, lo que significa que para cualquier nivel de Recall, generalmente se obtiene una mejor PrecisiÃ³n. Es un modelo globalmente superior."
     )
     st.subheader(f"5.4 Analisis de umbral de decision (umbral activo = {threshold:.3f})")
     st.caption(
@@ -1414,9 +1375,9 @@ def _render_evaluation(report):
     _plotly_layout(fig, 420)
     st.plotly_chart(fig, use_container_width=True, key="eval_threshold")
     _chart_explainer(
-        "El gráfico muestra cómo cambian las métricas principales al mover el umbral de decisión. La línea dorada es el umbral activo, y la gris es el default (0.5).",
-        "Se ve claramente que bajar el umbral de 0.5 a 0.325 aumenta mucho el Recall (línea verde) con una caída controlada de la Precisión (línea morada). El F1-Score (naranja), que balancea ambas, alcanza su pico cerca de este umbral.",
-        "El modelo V1 operaba con el umbral de 0.5 por defecto. El análisis de V2 demostró que un umbral más bajo estaba mejor alineado con el objetivo de negocio de maximizar la captura de leads calientes."
+        "El grÃ¡fico muestra cÃ³mo cambian las mÃ©tricas principales al mover el umbral de decisiÃ³n. La lÃ­nea dorada es el umbral activo, y la gris es el default (0.5).",
+        "Se ve claramente que bajar el umbral de 0.5 a 0.325 aumenta mucho el Recall (lÃ­nea verde) con una caÃ­da controlada de la PrecisiÃ³n (lÃ­nea morada). El F1-Score (naranja), que balancea ambas, alcanza su pico cerca de este umbral.",
+        "El modelo V1 operaba con el umbral de 0.5 por defecto. El anÃ¡lisis de V2 demostrÃ³ que un umbral mÃ¡s bajo estaba mejor alineado con el objetivo de negocio de maximizar la captura de leads calientes."
     )
 
     comp = report["threshold_comparison"]
@@ -1462,9 +1423,9 @@ def _render_evaluation(report):
         _plotly_layout(fig, 320)
         st.plotly_chart(fig, use_container_width=True, key="eval_fn_hist")
     _chart_explainer(
-        "Los histogramas muestran la distribución de probabilidades para los errores del modelo. Falsos Positivos (izquierda) son leads 'Cold' que el modelo predijo como 'Hot'. Falsos Negativos (derecha) son 'Hot' que el modelo predijo como 'Cold'.",
-        f"La mayoría de los errores (tanto FP como FN) se concentran cerca del umbral de decisión. Esto es positivo: significa que el modelo duda en los casos más ambiguos, en lugar de cometer errores groseros con alta confianza. La probabilidad media de los FP es {_safe_mean(fp_probas):.3f} y de los FN es {_safe_mean(fn_probas):.3f}.",
-        "El modelo V2 tiene una distribución de errores más concentrada alrededor del umbral, indicando una mejor 'calibración' de sus probabilidades en comparación con V1."
+        "Los histogramas muestran la distribuciÃ³n de probabilidades para los errores del modelo. Falsos Positivos (izquierda) son leads 'Cold' que el modelo predijo como 'Hot'. Falsos Negativos (derecha) son 'Hot' que el modelo predijo como 'Cold'.",
+        f"La mayorÃ­a de los errores (tanto FP como FN) se concentran cerca del umbral de decisiÃ³n. Esto es positivo: significa que el modelo duda en los casos mÃ¡s ambiguos, en lugar de cometer errores groseros con alta confianza. La probabilidad media de los FP es {_safe_mean(fp_probas):.3f} y de los FN es {_safe_mean(fn_probas):.3f}.",
+        "El modelo V2 tiene una distribuciÃ³n de errores mÃ¡s concentrada alrededor del umbral, indicando una mejor 'calibraciÃ³n' de sus probabilidades en comparaciÃ³n con V1."
     )
 
     st.subheader("5.6 Interpretabilidad - SHAP")
@@ -1487,9 +1448,9 @@ def _render_evaluation(report):
         plt.close()
         with col_shap1:
             _chart_explainer(
-            "Este gráfico de barras muestra el impacto promedio absoluto de cada feature en la predicción. Las features más arriba son las que más mueven la aguja del modelo, sea para bien o para mal.",
-            "Permite confirmar a alto nivel qué variables son las más influyentes en el modelo.",
-            "En V2, las features son más limpias y representativas del negocio real, a diferencia de V1 donde el leakage podía dominar."
+            "Este grÃ¡fico de barras muestra el impacto promedio absoluto de cada feature en la predicciÃ³n. Las features mÃ¡s arriba son las que mÃ¡s mueven la aguja del modelo, sea para bien o para mal.",
+            "Permite confirmar a alto nivel quÃ© variables son las mÃ¡s influyentes en el modelo.",
+            "En V2, las features son mÃ¡s limpias y representativas del negocio real, a diferencia de V1 donde el leakage podÃ­a dominar."
         )
 
         fig, _ = plt.subplots(figsize=(7, 5))
@@ -1499,8 +1460,8 @@ def _render_evaluation(report):
         with col_shap2:
             _chart_explainer(
             "Cada punto es un lead. El color indica el valor de la feature (rojo=alto, azul=bajo). El eje X muestra el impacto SHAP: valores positivos empujan hacia 'Hot', negativos hacia 'Cold'.",
-            "Permite ver no solo QUÉ features son importantes, sino CÓMO impactan. Por ejemplo, se puede observar si valores altos de una feature (puntos rojos) tienden a tener un impacto positivo (a la derecha).",
-            "Este tipo de análisis detallado no se realizó en V1, y es clave en V2 para entender el comportamiento del modelo a nivel de lead individual."
+            "Permite ver no solo QUÃ‰ features son importantes, sino CÃ“MO impactan. Por ejemplo, se puede observar si valores altos de una feature (puntos rojos) tienden a tener un impacto positivo (a la derecha).",
+            "Este tipo de anÃ¡lisis detallado no se realizÃ³ en V1, y es clave en V2 para entender el comportamiento del modelo a nivel de lead individual."
         )
         plt.close()
 
