@@ -1,4 +1,4 @@
-# 🧠 CONTEXTO DEL PROYECTO — predictivo_ml_leads
+que que# 🧠 CONTEXTO DEL PROYECTO — predictivo_ml_leads
 <!-- 
   INSTRUCCIÓN PARA ANTIGRAVITY:
   Lee este archivo PRIMERO al inicio de cada sesión de trabajo en este proyecto.
@@ -128,3 +128,9 @@ predictivo_ml_leads/
 - ⚠️ Warnings de Streamlit: reemplazar `use_container_width` → `width` (deprecado en dic 2025)
 - ⚠️ `nombre_formulario` y `campana` son redundantes para formularios MX_Renault (relación 1:1)
 - 📋 Ver `PENDIENTES_VALIDACION.md` para tareas pendientes
+
+---
+
+## Origen del Harness (Engineering)
+Este proyecto se inicializó a partir del siguiente harness/plantilla:
+- https://github.com/JocDLC/dev-harness-template

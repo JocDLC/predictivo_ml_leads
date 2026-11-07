@@ -1,4 +1,4 @@
-"""Componente de grilla de resultados con filtros."""
+﻿"""Componente de grilla de resultados con filtros."""
 
 import streamlit as st
 import pandas as pd
@@ -29,7 +29,10 @@ def render_stats(stats):
 
 def render_grid(results):
     """Renderiza la grilla interactiva de resultados con filtros."""
-    st.markdown("### 📊 Resultados de predicción")
+    st.markdown(
+        '<div class="section-header"><h3>📊 Resultados de predicción</h3></div>',
+        unsafe_allow_html=True,
+    )
 
     # Filtros
     col_f1, col_f2, col_f3 = st.columns(3)
@@ -66,7 +69,12 @@ def render_grid(results):
 
     df_filtered = results[mask].copy()
 
-    st.caption(f"Mostrando {len(df_filtered):,} de {len(results):,} leads")
+    total_hot = int((df_filtered["prediccion"] == "Hot \U0001f525").sum())
+    total_cold = int((df_filtered["prediccion"] == "Cold \u2744\ufe0f").sum())
+    st.caption(
+        f"Mostrando **{len(df_filtered):,}** de {len(results):,} leads  |  "
+        f"🔥 Hot: {total_hot:,}  |  ❄️ Cold: {total_cold:,}"
+    )
 
     # Columnas a mostrar
     display_cols = ["prediccion", "probabilidad_hot"]
@@ -87,7 +95,7 @@ def render_grid(results):
     # Mostrar tabla
     st.dataframe(
         df_show,
-        use_container_width=True,
+        width="stretch",
         height=400,
         column_config={
             "prediccion": st.column_config.TextColumn("Predicción", width="small"),
@@ -106,11 +114,15 @@ def render_grid(results):
 
     # Botón de descarga
     csv = results.to_csv(index=False, encoding="utf-8")
-    st.download_button(
-        "⬇️ Descargar CSV completo",
-        data=csv,
-        file_name="predicciones_leads.csv",
-        mime="text/csv",
-    )
+    col_dl, _ = st.columns([1, 3])
+    with col_dl:
+        st.download_button(
+            "⬇️ Descargar CSV completo",
+            data=csv,
+            file_name="predicciones_leads.csv",
+            mime="text/csv",
+            type="primary",
+        )
 
     return df_filtered
+

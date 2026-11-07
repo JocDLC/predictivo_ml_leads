@@ -1,4 +1,4 @@
-"""
+﻿"""
 Componente de historial de sesiones — Sistema de memoria SQLite.
 
 Renderiza el tab 📜 Historial con tabla de sesiones pasadas,
@@ -46,7 +46,7 @@ def render_trend_chart(df_trend: pd.DataFrame):
         height=350
     )
 
-    st.plotly_chart(fig, use_container_width=True, key="history_trend_chart")
+    st.plotly_chart(fig, width="stretch", key="history_trend_chart")
 
 
 def render_sessions_table(df_sessions: pd.DataFrame) -> int | None:
@@ -84,7 +84,7 @@ def render_sessions_table(df_sessions: pd.DataFrame) -> int | None:
 
     st.dataframe(
         display,
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
         column_config={
             "ID":     st.column_config.NumberColumn(width="small"),
@@ -160,7 +160,7 @@ def render_session_detail(session_ids: list[int]):
 
         st.dataframe(
             df_display,
-            use_container_width=True,
+            width="stretch",
             hide_index=True,
             column_config={
                 "Prob. Hot %": st.column_config.ProgressColumn(
@@ -200,3 +200,4 @@ def render_history_page():
     if not df_sessions.empty:
         session_ids = df_sessions["id"].tolist()
         render_session_detail(session_ids)
+

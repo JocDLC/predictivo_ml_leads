@@ -7,6 +7,7 @@ Ejecutar:
 
 import streamlit as st
 import re
+from pathlib import Path
 
 # 1. Configuración de página (SIEMPRE PRIMERO)
 st.set_page_config(
@@ -43,7 +44,11 @@ umbral = report_context["umbral"]
 metrics = report_context.get("metrics_display", {})
 
 with st.sidebar:
-    st.image(r"G:\@ DESCARGAS\@ DESARROLLO\predictivo_ml_leads\RENAULT images.png", use_container_width=True)
+    logo_path = Path(__file__).resolve().parents[1] / "RENAULT images.png"
+    if logo_path.exists():
+        st.image(str(logo_path), width="stretch")
+    else:
+        st.caption("Logo no disponible")
     st.markdown(
         """
         <div style="text-align: center; margin-bottom: 20px;">
@@ -96,7 +101,15 @@ with st.sidebar:
 
 # 5. Funciones de Página
 def render_prediction_page():
-    st.title("🎯 Predicción de Hot/Cold Leads")
+    st.markdown(
+        """
+        <div class="page-hero">
+            <h1>🎯 Predicción de Hot/Cold Leads</h1>
+            <p>Sube el archivo exportado desde Salesforce para clasificar automáticamente cada lead.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
     uploaded_file = render_upload()
 
     if uploaded_file is not None:
@@ -109,7 +122,7 @@ def render_prediction_page():
                     st.session_state["stats"] = stats
                     st.session_state["file_name"] = uploaded_file.name
                     save_session(uploaded_file.name, results, stats)
-                    st.toast("✅ Sesión procesada y guardada")
+                    st.toast("✅ Predicciones generadas y sesión guardada")
                 except Exception as e:
                     st.error(f"Error: {e}")
                     return
@@ -118,24 +131,33 @@ def render_prediction_page():
         df_model = st.session_state["df_model"]
         stats = st.session_state["stats"]
 
-        total_leads = len(results)
-        if "Predicción" in results.columns:
-            hot_leads = (results["Predicción"] == "Hot").sum() if results["Predicción"].dtype == object else results["Predicción"].sum()
-        elif "Prediccion" in results.columns:
-            hot_leads = (results["Prediccion"] == "Hot").sum() if results["Prediccion"].dtype == object else results["Prediccion"].sum()
-        else:
-            hot_leads = stats.get("Hot", stats.get("hot", 0)) if isinstance(stats, dict) else 0
-            
-        cold_leads = total_leads - hot_leads
+        total_leads = int(stats.get("total_evaluados", len(results)))
+        hot_leads = int(stats.get("n_hot", 0))
+        cold_leads = int(stats.get("n_cold", total_leads - hot_leads))
         hot_pct = (hot_leads / total_leads) * 100 if total_leads > 0 else 0
         
-        st.success(f"🎉 **{total_leads} leads procesados con éxito:** {int(hot_leads)} Hot ({hot_pct:.1f}%) | {int(cold_leads)} Cold")
+        c1, c2, c3 = st.columns([1, 1, 1])
+        with c1:
+            st.success(f"✅ **{total_leads:,}** leads evaluados")
+        with c2:
+            st.markdown(
+                f'<div style="text-align:center;padding:8px 0">' +
+                f'<span class="badge-hot">🔥 Hot: {int(hot_leads):,} ({hot_pct:.1f}%)</span></div>',
+                unsafe_allow_html=True,
+            )
+        with c3:
+            cold_pct = 100 - hot_pct
+            st.markdown(
+                f'<div style="text-align:center;padding:8px 0">' +
+                f'<span class="badge-cold">❄️ Cold: {int(cold_leads):,} ({cold_pct:.1f}%)</span></div>',
+                unsafe_allow_html=True,
+            )
 
-        st.markdown("---")
+        st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
         render_stats(stats)
-        st.markdown("---")
+        st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
         df_filtered = render_grid(results)
-        st.markdown("---")
+        st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
         if len(df_filtered) > 0:
             display_df, selected_idx = render_lead_selector(results, df_filtered)
@@ -146,14 +168,39 @@ def render_prediction_page():
                     explanation_df, base_value, predicted_proba = explain_lead(model_row)
                 render_lead_detail(display_df, explanation_df, base_value, predicted_proba, selected_idx)
     else:
-        st.markdown("---")
+        st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+        st.markdown("##### ¿Cómo funciona?")
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.markdown("#### 1️⃣ Sube el Excel\nExporta los leads desde Salesforce en formato `.xlsx`")
+            st.markdown(
+                '<div class="step-card">'
+                '<span class="step-emoji">📁</span>'
+                '<div class="step-number">1</div>'
+                '<div class="step-title">Sube el archivo</div>'
+                '<div class="step-desc">Exporta los leads desde Salesforce en formato <strong>.xlsx</strong>, <strong>.xls</strong> o <strong>.csv</strong>.</div>'
+                '</div>',
+                unsafe_allow_html=True,
+            )
         with col2:
-            st.markdown("#### 2️⃣ Predicción automática\nEl modelo clasifica cada lead como **Hot** 🔥 o **Cold** ❄️")
+            st.markdown(
+                '<div class="step-card">'
+                '<span class="step-emoji">🤖</span>'
+                '<div class="step-number">2</div>'
+                '<div class="step-title">Predicción automática</div>'
+                '<div class="step-desc">El modelo clasifica cada lead como <strong>Hot 🔥</strong> o <strong>Cold ❄️</strong> con su probabilidad.</div>'
+                '</div>',
+                unsafe_allow_html=True,
+            )
         with col3:
-            st.markdown("#### 3️⃣ Explora resultados\nFiltra, ordena y ve **por qué** cada lead fue clasificado así")
+            st.markdown(
+                '<div class="step-card">'
+                '<span class="step-emoji">🔍</span>'
+                '<div class="step-number">3</div>'
+                '<div class="step-title">Explora resultados</div>'
+                '<div class="step-desc">Filtra, ordena y descubre <strong>por qué</strong> cada lead fue clasificado así con explicaciones SHAP.</div>'
+                '</div>',
+                unsafe_allow_html=True,
+            )
 
 # 6. Routing (Lógica de exclusión mutua)
 main_container = st.container()
@@ -165,3 +212,5 @@ with main_container:
         render_model_report()
     elif page == "📜 Historial":
         render_history_page()
+
+

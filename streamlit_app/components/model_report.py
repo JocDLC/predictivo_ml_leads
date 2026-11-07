@@ -1,4 +1,4 @@
-"""
+﻿"""
 Reporte del modelo predictivo con metricas y contexto calculados en runtime.
 """
 
@@ -79,6 +79,14 @@ def _find_column(df, contains_all):
     return None
 
 
+def _read_csv_safe(path, **kwargs):
+    try:
+        return pd.read_csv(path, **kwargs)
+    except pd.errors.ParserError:
+        safe_kwargs = {**kwargs, "engine": "python", "on_bad_lines": "skip"}
+        return pd.read_csv(path, **safe_kwargs)
+
+
 def _format_model_name(model):
     return type(model).__name__
 
@@ -150,7 +158,7 @@ def get_positive_shap_explanation(shap_values):
 
 @st.cache_data
 def load_clean_data():
-    df = pd.read_csv(CLEAN_PATH)
+    df = _read_csv_safe(CLEAN_PATH, sep=",")
     if "dia_semana_creacion" in df.columns:
         df["dia_semana_creacion"] = df["dia_semana_creacion"].replace(DAY_MAP)
         df["dia_semana_creacion"] = df["dia_semana_creacion"].map(
@@ -161,7 +169,16 @@ def load_clean_data():
 
 @st.cache_data
 def load_raw_data():
-    return pd.read_csv(RAW_PATH, sep=";", encoding="latin-1")
+    if os.path.exists(RAW_PATH):
+        return _read_csv_safe(RAW_PATH, sep=";", encoding="latin-1")
+
+    # Fallback: permitir que el reporte siga funcionando sin dataset raw versionado.
+    if os.path.exists(CLEAN_PATH):
+        return _read_csv_safe(CLEAN_PATH, sep=",")
+
+    raise FileNotFoundError(
+        "No se encontró `data/raw/leads_raw.csv` ni `data/processed/leads_cleaned.csv`."
+    )
 
 
 @st.cache_data
@@ -190,13 +207,13 @@ def load_train_test():
         if not all(os.path.exists(path) for key, path in paths.items() if key != "name"):
             continue
 
-        X_train = pd.read_csv(paths["x_train"])
-        X_test = pd.read_csv(paths["x_test"])
+        X_train = _read_csv_safe(paths["x_train"], sep=",")
+        X_test = _read_csv_safe(paths["x_test"], sep=",")
         if expected_features and list(X_test.columns) != list(expected_features):
             continue
 
-        y_train = pd.read_csv(paths["y_train"]).squeeze()
-        y_test = pd.read_csv(paths["y_test"]).squeeze()
+        y_train = _read_csv_safe(paths["y_train"], sep=",").squeeze()
+        y_test = _read_csv_safe(paths["y_test"], sep=",").squeeze()
         return {
             "dataset_name": paths["name"],
             "X_train": X_train,
@@ -294,7 +311,7 @@ def render_model_report():
     df = load_clean_data()
 
     st.title("Reporte del Modelo Predictivo")
-    st.caption("Resumen de las 5 fases del proyecto: datos, analisis, features, modelado y evaluacion.")
+    st.caption("Resumen de las 5 fases del proyecto: datos, análisis, features, modelado y evaluación.")
 
     execution_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     model = report["model"]
@@ -305,7 +322,7 @@ def render_model_report():
                 f"Features esperadas: `{report['training_context']['n_features']}`",
                 f"Dataset: `{report['dataset_name']}`",
                 f"Umbral activo: `{report['umbral']:.3f}`",
-                f"Ejecucion: `{execution_time}`",
+                f"Ejecución: `{execution_time}`",
             ]
         )
     )
@@ -313,10 +330,10 @@ def render_model_report():
     tab1, tab2, tab3, tab4, tab5 = st.tabs(
         [
             "1. Data Engineering",
-            "2. Analisis Exploratorio",
+            "2. Análisis Exploratorio",
             "3. Feature Engineering",
             "4. Modelado",
-            "5. Evaluacion",
+            "5. Evaluación",
         ]
     )
 
@@ -339,17 +356,23 @@ def _render_data_engineering(df):
     with st.expander("Decisiones de negocio del pipeline V2", expanded=True):
         st.markdown(
             """
-            - El universo de entrenamiento se restringe a **leads de 2025** para evitar drift temporal frente a anos anteriores.
-            - Se excluyen **abril, mayo y junio de 2025** por comportamiento operativo anomalo en asignacion y volumen.
-            - Se eliminan los leads de **chatbot** para modelar solo la gestion comercial humana.
-            - Los leads sin **cualificacion** se descartan porque no permiten construir el target correctamente.
+            - El universo de entrenamiento se restringe a **leads de 2025** para evitar drift temporal frente a años anteriores.
+            - Se excluyen **abril, mayo y junio de 2025** por comportamiento operativo anómalo en asignación y volumen.
+            - Se eliminan los leads de **chatbot** para modelar solo la gestión comercial humana.
+            - Los leads sin **cualificación** se descartan porque no permiten construir el target correctamente.
             - El target binario se define como **Hot = `Contacto interesado`** y **Cold = resto de cualificaciones**.
             - Se excluyen los formularios **Arkana** y **Oroch** porque llegaban pre-clasificados como Hot y contaminaban el modelo con **data leakage**.
-            - Los nulos categoricos se imputan con **`Desconocido`** y al final se eliminan duplicados antes de exportar.
+            - Los nulos categóricos se imputan con **`Desconocido`** y al final se eliminan duplicados antes de exportar.
             """
         )
 
     raw_df = load_raw_data()
+    raw_source = "data/raw/leads_raw.csv" if os.path.exists(RAW_PATH) else "data/processed/leads_cleaned.csv (fallback)"
+    if not os.path.exists(RAW_PATH):
+        st.warning(
+            "No se encontró `data/raw/leads_raw.csv`. "
+            "Se usa `data/processed/leads_cleaned.csv` como fallback para este resumen."
+        )
     raw_rows = len(raw_df)
     clean_rows = len(df)
     raw_cols = len(raw_df.columns)
@@ -364,11 +387,11 @@ def _render_data_engineering(df):
     # El raw local y el clean pueden venir de cortes distintos.
     if clean_rows > raw_rows:
         st.warning(
-            "Atencion: este resumen compara dos archivos de distinto corte temporal. "
-            f"`data/raw/leads_raw.csv` tiene {raw_rows:,} filas y "
+            "Atención: este resumen compara dos archivos de distinto corte temporal. "
+            f"`{raw_source}` tiene {raw_rows:,} filas y "
             f"`data/processed/leads_cleaned.csv` tiene {clean_rows:,}. "
             "Por eso puede verse 'filas limpias' mayor a 'filas originales'. "
-            "Para una comparacion 1:1, ambos archivos deben generarse desde la misma corrida de pipeline."
+            "Para una comparación 1:1, ambos archivos deben generarse desde la misma corrida de pipeline."
         )
 
     col1, col2, col3, col4 = st.columns(4)
@@ -382,7 +405,7 @@ def _render_data_engineering(df):
         ("Leads 2025", 322009),
         ("Excluir Abr/May/Jun 2025", 223298),
         ("Eliminar chatbot", 73594),
-        ("Eliminar sin cualificacion", 66028),
+        ("Eliminar sin cualificación", 66028),
         ("Eliminar leakage Arkana/Oroch", 61905),
         ("Eliminar duplicados / dataset final", clean_rows),
     ]
@@ -396,14 +419,14 @@ def _render_data_engineering(df):
         )
     )
     funnel.update_layout(title="Volumen por etapa del pipeline V2 documentado", height=460)
-    st.plotly_chart(funnel, use_container_width=True, key="de_funnel_doc")
+    st.plotly_chart(funnel, width="stretch", key="de_funnel_doc")
     st.caption(
         "Las etapas intermedias se toman del notebook `00_data_engineering_v2_2025.ipynb`. "
-        "El CSV crudo disponible en la app no conserva el historico completo usado en ese notebook, "
-        "asi que el funnel prioriza las cifras auditadas del pipeline V2."
+        "El CSV crudo disponible en la app no conserva el histórico completo usado en ese notebook, "
+        "así que el funnel prioriza las cifras auditadas del pipeline V2."
     )
 
-    st.subheader("Distribucion del target")
+    st.subheader("Distribución del target")
     col1, col2 = st.columns(2)
     with col1:
         pie = go.Figure(
@@ -415,8 +438,8 @@ def _render_data_engineering(df):
                 textinfo="label+percent",
             )
         )
-        pie.update_layout(title="Proporcion Hot vs Cold", height=380)
-        st.plotly_chart(pie, use_container_width=True, key="eda_target_pie")
+        pie.update_layout(title="Proporción Hot vs Cold", height=380)
+        st.plotly_chart(pie, width="stretch", key="eda_target_pie")
     with col2:
         bar = go.Figure(
             go.Bar(
@@ -428,62 +451,62 @@ def _render_data_engineering(df):
             )
         )
         bar.update_layout(title="Conteo de leads", yaxis_title="Cantidad", height=380)
-        st.plotly_chart(bar, use_container_width=True, key="eda_target_bar")
+        st.plotly_chart(bar, width="stretch", key="eda_target_bar")
 
     st.info(
-        f"Distribucion actual: Hot {hot_rate:.1%} vs Cold {1 - hot_rate:.1%}. "
+        f"Distribución actual: Hot {hot_rate:.1%} vs Cold {1 - hot_rate:.1%}. "
         f"Ratio Hot/Cold = {hot / max(cold, 1):.2f}:1."
     )
 
     detail_rows = [
         {
             "Paso": "Encoding y lectura",
-            "Accion": "Lectura de CSV crudo con separador `;` y encoding `latin-1`.",
+            "Acción": "Lectura de CSV crudo con separador `;` y encoding `latin-1`.",
             "Impacto": f"{raw_cols} columnas legibles",
         },
         {
-            "Paso": "Filtro ano 2025",
-            "Accion": "Restringe el universo al periodo operativo vigente para evitar drift temporal.",
-            "Impacto": "322,009 registros segun notebook V2",
+            "Paso": "Filtro año 2025",
+            "Acción": "Restringe el universo al periodo operativo vigente para evitar drift temporal.",
+            "Impacto": "322,009 registros según notebook V2",
         },
         {
-            "Paso": "Exclusion meses anomalos (Abr/May/Jun 2025)",
-            "Accion": "Remueve meses con cambios de proceso y volumenes atipicos.",
+            "Paso": "Exclusión meses anómalos (Abr/May/Jun 2025)",
+            "Acción": "Remueve meses con cambios de proceso y volúmenes atípicos.",
             "Impacto": "-98,711 filas estimadas entre el corte 2025 y el dataset pre-chatbot",
         },
         {
-            "Paso": "Eliminacion chatbot",
-            "Accion": "Excluye leads procesados por bot para modelar solo gestion humana.",
-            "Impacto": "-149,704 filas segun notebook V2",
+            "Paso": "Eliminación chatbot",
+            "Acción": "Excluye leads procesados por bot para modelar solo gestión humana.",
+            "Impacto": "-149,704 filas según notebook V2",
         },
         {
-            "Paso": "Filtrar sin cualificacion",
-            "Accion": "Descarta leads sin etiqueta util para construir el target.",
-            "Impacto": "-7,566 filas segun notebook V2",
+            "Paso": "Filtrar sin cualificación",
+            "Acción": "Descarta leads sin etiqueta útil para construir el target.",
+            "Impacto": "-7,566 filas según notebook V2",
         },
         {
             "Paso": "Target binario",
-            "Accion": "Se genera `target` con Hot = `Contacto interesado` y Cold = resto.",
+            "Acción": "Se genera `target` con Hot = `Contacto interesado` y Cold = resto.",
             "Impacto": f"{hot:,} Hot / {cold:,} Cold",
         },
         {
-            "Paso": "Eliminacion leakage Arkana/Oroch",
-            "Accion": "Excluye formularios pre-clasificados como Hot sin cualificacion humana real.",
+            "Paso": "Eliminación leakage Arkana/Oroch",
+            "Acción": "Excluye formularios pre-clasificados como Hot sin cualificación humana real.",
             "Impacto": "-4,123 filas; 66,028 -> 61,905",
         },
         {
-            "Paso": "Reduccion de columnas",
-            "Accion": "Se conservan solo variables disponibles al momento de creacion del lead.",
+            "Paso": "Reducción de columnas",
+            "Acción": "Se conservan solo variables disponibles al momento de creación del lead.",
             "Impacto": f"{raw_cols} -> {clean_cols} columnas",
         },
         {
-            "Paso": "Imputacion de nulos con `Desconocido`",
-            "Accion": "Completa categoricas faltantes sin forzar la moda.",
+            "Paso": "Imputación de nulos con `Desconocido`",
+            "Acción": "Completa categóricas faltantes sin forzar la moda.",
             "Impacto": f"Nulos restantes {clean_nulls}",
         },
         {
             "Paso": "Duplicados finales",
-            "Accion": "Elimina filas repetidas antes de exportar el dataset productivo.",
+            "Acción": "Elimina filas repetidas antes de exportar el dataset productivo.",
             "Impacto": (
                 f"-3,359 filas en notebook V2; duplicados en crudo {raw_duplicates:,}"
                 if not pd.isna(raw_duplicates)
@@ -492,14 +515,14 @@ def _render_data_engineering(df):
         },
     ]
     with st.expander("Detalle de limpieza"):
-        st.dataframe(pd.DataFrame(detail_rows), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(detail_rows), width="stretch", hide_index=True)
 
 
 def _render_eda(df, report):
-    st.header("2. Analisis Exploratorio de Datos")
+    st.header("2. Análisis Exploratorio de Datos")
     global_rate = df["target"].mean() * 100
 
-    st.subheader("2.1 Distribucion del target (Dataset Limpio)")
+    st.subheader("2.1 Distribución del target (Dataset Limpio)")
     col1, col2 = st.columns(2)
     hot = int(df["target"].sum())
     cold = int(len(df) - hot)
@@ -514,8 +537,8 @@ def _render_eda(df, report):
                 textinfo="label+percent",
             )
         )
-        pie.update_layout(title="Proporcion Hot vs Cold", height=380)
-        st.plotly_chart(pie, use_container_width=True, key="eda_dataset_target_pie")
+        pie.update_layout(title="Proporción Hot vs Cold", height=380)
+        st.plotly_chart(pie, width="stretch", key="eda_dataset_target_pie")
 
     with col2:
         bar = go.Figure(
@@ -528,16 +551,16 @@ def _render_eda(df, report):
             )
         )
         bar.update_layout(title="Conteo de leads", yaxis_title="Cantidad", height=380)
-        st.plotly_chart(bar, use_container_width=True, key="eda_dataset_target_bar")
+        st.plotly_chart(bar, width="stretch", key="eda_dataset_target_bar")
 
     _chart_explainer(
-        "La grÃ¡fica de pastel (izquierda) muestra la proporciÃ³n de leads 'Hot' (oportunidades reales) vs 'Cold' (descartes). La grÃ¡fica de barras (derecha) muestra el conteo absoluto para cada clase.",
-        "El dataset estÃ¡ desbalanceado: hay muchos mÃ¡s leads 'Cold' que 'Hot'. Esto es tÃ­pico en la generaciÃ³n de leads, pero requiere que el modelo sea evaluado con mÃ©tricas como F1 o Recall, no solo Accuracy.",
-        "El pipeline V2 es mÃ¡s estricto, resultando en una tasa de 'Hot' mÃ¡s baja pero mÃ¡s realista que en V1, que estaba inflada por data leakage. El modelo V2 aprende de una distribuciÃ³n mÃ¡s limpia."
+        "La gráfica de pastel (izquierda) muestra la proporción de leads 'Hot' (oportunidades reales) vs 'Cold' (descartes). La gráfica de barras (derecha) muestra el conteo absoluto para cada clase.",
+        "El dataset está desbalanceado: hay muchos más leads 'Cold' que 'Hot'. Esto es típico en la generación de leads, pero requiere que el modelo sea evaluado con métricas como F1 o Recall, no solo Accuracy.",
+        "El pipeline V2 es más estricto, resultando en una tasa de 'Hot' más baja pero más realista que en V1, que estaba inflada por data leakage. El modelo V2 aprende de una distribución más limpia."
     )
 
-    st.subheader("2.2 Patrones temporales (Volumen y Conversion)")
-    tab_hora, tab_dia, tab_mes = st.tabs(["Por Hora", "Por Dia", "Por Mes"])
+    st.subheader("2.2 Patrones temporales (Volumen y Conversión)")
+    tab_hora, tab_dia, tab_mes = st.tabs(["Por Hora", "Por Día", "Por Mes"])
     with tab_hora:
         conv_hora = df.groupby("hora_creacion")["target"].agg(["mean", "count"]).reset_index()
         conv_hora["mean"] *= 100
@@ -545,15 +568,15 @@ def _render_eda(df, report):
         fig_hora.add_trace(go.Bar(x=conv_hora["hora_creacion"], y=conv_hora["count"], name="Volumen", marker_color="rgba(100, 150, 250, 0.4)"), secondary_y=False)
         fig_hora.add_trace(go.Scatter(x=conv_hora["hora_creacion"], y=conv_hora["mean"], mode="lines+markers", name="% Hot", line=dict(color=ACCENT, width=3)), secondary_y=True)
         fig_hora.add_hline(y=global_rate, line_dash="dash", line_color="gray", secondary_y=True)
-        fig_hora.update_layout(title="Volumen y Tasa de conversion por hora", height=400)
+        fig_hora.update_layout(title="Volumen y Tasa de conversión por hora", height=400)
         fig_hora.update_yaxes(title_text="Cantidad de Leads", secondary_y=False)
         fig_hora.update_yaxes(title_text="% Hot", secondary_y=True)
         _plotly_layout(fig_hora)
-        st.plotly_chart(fig_hora, use_container_width=True, key="eda_hora")
+        st.plotly_chart(fig_hora, width="stretch", key="eda_hora")
         _chart_explainer(
-            "La grÃ¡fica combina barras de volumen (eje izquierdo) con una lÃ­nea de tasa de conversiÃ³n (eje derecho) para cada hora del dÃ­a. La lÃ­nea punteada es la tasa de conversiÃ³n promedio global.",
-            "El mayor volumen de leads entra entre las 9am y 7pm. Sin embargo, la tasa de conversiÃ³n es notablemente mÃ¡s alta en la madrugada (0-5am), cuando el volumen es bajo. Estos leads nocturnos, aunque pocos, son de alta calidad.",
-            "El patrÃ³n de V2 es similar al de V1, pero la creaciÃ³n de la feature `franja_horaria` en el pipeline V2 ayuda al modelo a capturar explÃ­citamente el valor de los leads de madrugada/noche."
+            "La gráfica combina barras de volumen (eje izquierdo) con una línea de tasa de conversión (eje derecho) para cada hora del día. La línea punteada es la tasa de conversión promedio global.",
+            "El mayor volumen de leads entra entre las 9am y 7pm. Sin embargo, la tasa de conversión es notablemente más alta en la madrugada (0-5am), cuando el volumen es bajo. Estos leads nocturnos, aunque pocos, son de alta calidad.",
+            "El patrón de V2 es similar al de V1, pero la creación de la feature `franja_horaria` en el pipeline V2 ayuda al modelo a capturar explícitamente el valor de los leads de madrugada/noche."
         )
 
     with tab_dia:
@@ -563,15 +586,15 @@ def _render_eda(df, report):
         fig_dia.add_trace(go.Bar(x=conv_dia.index, y=conv_dia["count"], name="Volumen", marker_color="rgba(100, 150, 250, 0.4)"), secondary_y=False)
         fig_dia.add_trace(go.Scatter(x=conv_dia.index, y=conv_dia["mean"], mode="lines+markers", name="% Hot", line=dict(color=ACCENT, width=3)), secondary_y=True)
         fig_dia.add_hline(y=global_rate, line_dash="dash", line_color="gray", secondary_y=True)
-        fig_dia.update_layout(title="Volumen y Conversion por dia de semana", height=400)
+        fig_dia.update_layout(title="Volumen y Conversión por día de semana", height=400)
         fig_dia.update_yaxes(title_text="Cantidad de Leads", secondary_y=False)
         fig_dia.update_yaxes(title_text="% Hot", secondary_y=True)
         _plotly_layout(fig_dia)
-        st.plotly_chart(fig_dia, use_container_width=True, key="eda_dia")
+        st.plotly_chart(fig_dia, width="stretch", key="eda_dia")
         _chart_explainer(
-            "Compara el volumen de leads y la tasa de conversiÃ³n para cada dÃ­a de la semana. La lÃ­nea punteada es la conversiÃ³n promedio.",
-            "El volumen es mayor en dÃ­as de semana, pero la conversiÃ³n tiende a ser ligeramente superior los fines de semana (sÃ¡bado y domingo), cuando los prospectos tienen mÃ¡s tiempo para investigar.",
-            "Este patrÃ³n se mantiene consistente entre V1 y V2. La feature `es_fin_de_semana` en el pipeline V2 capitaliza este hallazgo."
+            "Compara el volumen de leads y la tasa de conversión para cada día de la semana. La línea punteada es la conversión promedio.",
+            "El volumen es mayor en días de semana, pero la conversión tiende a ser ligeramente superior los fines de semana (sábado y domingo), cuando los prospectos tienen más tiempo para investigar.",
+            "Este patrón se mantiene consistente entre V1 y V2. La feature `es_fin_de_semana` en el pipeline V2 capitaliza este hallazgo."
         )
 
     with tab_mes:
@@ -583,18 +606,18 @@ def _render_eda(df, report):
             fig_mes.add_trace(go.Bar(x=meses_labels, y=conv_mes["count"], name="Volumen", marker_color="rgba(100, 150, 250, 0.4)"), secondary_y=False)
             fig_mes.add_trace(go.Scatter(x=meses_labels, y=conv_mes["mean"], mode="lines+markers", name="% Hot", line=dict(color=ACCENT, width=3)), secondary_y=True)
             fig_mes.add_hline(y=global_rate, line_dash="dash", line_color="gray", secondary_y=True)
-            fig_mes.update_layout(title="Volumen y Conversion por mes", height=400)
+            fig_mes.update_layout(title="Volumen y Conversión por mes", height=400)
             fig_mes.update_yaxes(title_text="Cantidad de Leads", secondary_y=False)
             fig_mes.update_yaxes(title_text="% Hot", secondary_y=True)
             _plotly_layout(fig_mes)
-            st.plotly_chart(fig_mes, use_container_width=True, key="eda_mes")
+            st.plotly_chart(fig_mes, width="stretch", key="eda_mes")
             _chart_explainer(
-                "Compara el volumen y la tasa de conversiÃ³n a lo largo de los meses disponibles en el dataset de entrenamiento.",
-                "Se observan picos de conversiÃ³n en meses especÃ­ficos, posiblemente ligados a campaÃ±as o estacionalidad del mercado. El volumen puede variar drÃ¡sticamente, como se ve en los meses de verano.",
-                "El pipeline V2 excluye explÃ­citamente los meses de Abril, Mayo y Junio de 2025 por presentar un comportamiento anÃ³malo que afectaba negativamente el rendimiento del modelo V1."
+                "Compara el volumen y la tasa de conversión a lo largo de los meses disponibles en el dataset de entrenamiento.",
+                "Se observan picos de conversión en meses específicos, posiblemente ligados a campañas o estacionalidad del mercado. El volumen puede variar drásticamente, como se ve en los meses de verano.",
+                "El pipeline V2 excluye explícitamente los meses de Abril, Mayo y Junio de 2025 por presentar un comportamiento anómalo que afectaba negativamente el rendimiento del modelo V1."
             )
         else:
-            st.info("No se encontrÃ³ la columna 'mes_creacion' en el dataset.")
+            st.info("No se encontró la columna 'mes_creacion' en el dataset.")
 
     madrugada = df[df["hora_creacion"].between(0, 5)]["target"].mean() * 100
     best_day = conv_dia["mean"].idxmax()
@@ -608,23 +631,23 @@ def _render_eda(df, report):
         best_month, worst_month, conv_month = None, None, pd.Series()
 
     findings = [
-        f"**Madrugada (00-05h):** {madrugada:.1f}% de conversion. Aunque el volumen es menor, los leads que completan formularios de madrugada suelen tener una intencion de compra mas genuina y exploran con menos ruido." if not np.isnan(madrugada) else None,
-        f"**Mejor dia:** {best_day} ({conv_dia['mean'].max():.1f}%). Los fines de semana o dias especificos atraen prospectos con mas tiempo libre para analizar su compra, a diferencia del peor dia ({worst_day}, {conv_dia['mean'].min():.1f}%).",
-        f"**Estacionalidad (Mes):** Mejor mes {MONTH_NAMES.get(best_month, best_month)} ({conv_month.max():.1f}%) vs Peor mes {MONTH_NAMES.get(worst_month, worst_month)} ({conv_month.min():.1f}%). Los meses iniciales de anio o cierres de trimestre suelen alterar fuertemente el volumen de pauta y la calidad del lead." if best_month is not None else None,
+        f"**Madrugada (00-05h):** {madrugada:.1f}% de conversión. Aunque el volumen es menor, los leads que completan formularios de madrugada suelen tener una intención de compra más genuina y exploran con menos ruido." if not np.isnan(madrugada) else None,
+        f"**Mejor día:** {best_day} ({conv_dia['mean'].max():.1f}%). Los fines de semana o días específicos atraen prospectos con más tiempo libre para analizar su compra, a diferencia del peor día ({worst_day}, {conv_dia['mean'].min():.1f}%).",
+        f"**Estacionalidad (Mes):** Mejor mes {MONTH_NAMES.get(best_month, best_month)} ({conv_month.max():.1f}%) vs Peor mes {MONTH_NAMES.get(worst_month, worst_month)} ({conv_month.min():.1f}%). Los meses iniciales de año o cierres de trimestre suelen alterar fuertemente el volumen de pauta y la calidad del lead." if best_month is not None else None,
     ]
     st.markdown("**Hallazgos de negocio:**")
     st.markdown("\n".join([f"- {item}" for item in findings if item]))
 
-    st.subheader("2.3 Heatmap interactivo (Dia vs Hora)")
-    st.caption("Compara los momentos de mayor trafico (volumen) con los momentos de mayor calidad (conversion).")
+    st.subheader("2.3 Heatmap interactivo (Día vs Hora)")
+    st.caption("Compara los momentos de mayor tráfico (volumen) con los momentos de mayor calidad (conversión).")
     pivot_conv = df.groupby(["dia_semana_creacion", "hora_creacion"])["target"].mean().unstack(fill_value=0) * 100
     pivot_conv = pivot_conv.reindex([day for day in DAY_ORDER if day in pivot_conv.index])
     
     pivot_vol = df.groupby(["dia_semana_creacion", "hora_creacion"]).size().unstack(fill_value=0)
     pivot_vol = pivot_vol.reindex([day for day in DAY_ORDER if day in pivot_vol.index])
     
-    hm_type = st.radio("Metrica del Heatmap:", ["Tasa de Conversion (%)", "Volumen (Conteo)"], horizontal=True)
-    if hm_type == "Tasa de Conversion (%)":
+    hm_type = st.radio("Métrica del Heatmap:", ["Tasa de Conversión (%)", "Volumen (Conteo)"], horizontal=True)
+    if hm_type == "Tasa de Conversión (%)":
         fig_hm = go.Figure(
             go.Heatmap(
                 z=pivot_conv.values,
@@ -636,7 +659,7 @@ def _render_eda(df, report):
                 texttemplate="%{text}%",
             )
         )
-        fig_hm.update_layout(title="Tasa de conversion por hora y dia")
+        fig_hm.update_layout(title="Tasa de conversión por hora y día")
     else:
         fig_hm = go.Figure(
             go.Heatmap(
@@ -648,21 +671,21 @@ def _render_eda(df, report):
                 texttemplate="%{text}",
             )
         )
-        fig_hm.update_layout(title="Volumen de leads por hora y dia")
+        fig_hm.update_layout(title="Volumen de leads por hora y día")
 
     _plotly_layout(fig_hm, 400)
-    st.plotly_chart(fig_hm, use_container_width=True, key="eda_hm")
+    st.plotly_chart(fig_hm, width="stretch", key="eda_hm")
     _chart_explainer(
-        "El mapa de calor cruza el dÃ­a de la semana con la hora del dÃ­a. Puedes alternar entre ver la 'Tasa de ConversiÃ³n' (donde verde es mejor) y el 'Volumen' (donde azul oscuro es mayor).",
-        "Permite identificar 'horas doradas': momentos con alta conversiÃ³n y volumen decente (ej. noches de fin de semana) y 'puntos ciegos': horas de alto volumen pero baja calidad (ej. mediodÃ­a entre semana).",
-        "En V2, este anÃ¡lisis fue clave para crear la feature `franja_horaria`, que agrupa estos patrones y mejora la capacidad del modelo para distinguir leads de calidad basados en el momento de creaciÃ³n."
+        "El mapa de calor cruza el día de la semana con la hora del día. Puedes alternar entre ver la 'Tasa de Conversión' (donde verde es mejor) y el 'Volumen' (donde azul oscuro es mayor).",
+        "Permite identificar 'horas doradas': momentos con alta conversión y volumen decente (ej. noches de fin de semana) y 'puntos ciegos': horas de alto volumen pero baja calidad (ej. mediodía entre semana).",
+        "En V2, este análisis fue clave para crear la feature `franja_horaria`, que agrupa estos patrones y mejora la capacidad del modelo para distinguir leads de calidad basados en el momento de creación."
     )
 
-    st.subheader("2.4 Conversion por feature categorica")
+    st.subheader("2.4 Conversión por feature categórica")
     cat_features = {
-        "Vehiculo": "vehiculo_interes",
+        "Vehículo": "vehiculo_interes",
         "Origen": "origen",
-        "Campana": "campana",
+        "Campaña": "campana",
         "Formulario": "nombre_formulario",
         "Canal": "origen_creacion",
     }
@@ -688,16 +711,16 @@ def _render_eda(df, report):
         )
     )
     fig.add_vline(x=global_rate, line_dash="dash", line_color="gray")
-    fig.update_layout(title=f"Tasa de conversion por {selected_label}", xaxis_title="% Hot", height=max(350, len(conv) * 30))
+    fig.update_layout(title=f"Tasa de conversión por {selected_label}", xaxis_title="% Hot", height=max(350, len(conv) * 30))
     _plotly_layout(fig)
-    st.plotly_chart(fig, use_container_width=True, key="eda_cat_conv")
+    st.plotly_chart(fig, width="stretch", key="eda_cat_conv")
     _chart_explainer(
-        "Muestra la tasa de conversiÃ³n para cada categorÃ­a de la variable seleccionada. Las barras en verde superan el promedio global (lÃ­nea punteada), mientras que las rojas estÃ¡n por debajo.",
-        "Permite identificar quÃ© vehÃ­culos, orÃ­genes o campaÃ±as generan leads de mayor o menor calidad. Es una herramienta clave para optimizar la inversiÃ³n en marketing.",
-        "En V2, las categorÃ­as con muy pocos leads (y tasas de conversiÃ³n engaÃ±osas del 100% o 0%) son agrupadas en 'otros', limpiando la visualizaciÃ³n y permitiendo un anÃ¡lisis mÃ¡s robusto."
+        "Muestra la tasa de conversión para cada categoría de la variable seleccionada. Las barras en verde superan el promedio global (línea punteada), mientras que las rojas están por debajo.",
+        "Permite identificar qué vehículos, orígenes o campañas generan leads de mayor o menor calidad. Es una herramienta clave para optimizar la inversión en marketing.",
+        "En V2, las categorías con muy pocos leads (y tasas de conversión engañosas del 100% o 0%) son agrupadas en 'otros', limpiando la visualización y permitiendo un análisis más robusto."
     )
 
-    st.subheader("2.5 Fuerza de asociacion con el target")
+    st.subheader("2.5 Fuerza de asociación con el target")
     from scipy.stats import chi2_contingency
 
     def cramers_v(x, y):
@@ -725,11 +748,11 @@ def _render_eda(df, report):
     fig.add_vline(x=0.1, line_dash="dot", line_color=GOLD, annotation_text="Moderada")
     fig.update_layout(title="Cramer's V por variable", xaxis_title="Cramer's V")
     _plotly_layout(fig, 420)
-    st.plotly_chart(fig, use_container_width=True, key="eda_cramer")
+    st.plotly_chart(fig, width="stretch", key="eda_cramer")
     _chart_explainer(
-        "Mide la fuerza de asociaciÃ³n entre cada variable categÃ³rica y el target (ser 'Hot' o 'Cold'). Un valor cercano a 1 indica una asociaciÃ³n muy fuerte, mientras que cerca de 0 es dÃ©bil.",
-        "Variables como `vehiculo_interes` y `origen` tienen la mayor capacidad predictiva. Otras, como `dia_semana_creacion`, tienen una asociaciÃ³n mÃ¡s dÃ©bil por sÃ­ solas.",
-        "El anÃ¡lisis de Cramer's V en V2 ayudÃ³ a seleccionar las features mÃ¡s relevantes para el modelo, descartando aquellas con bajo poder predictivo que solo aÃ±adÃ­an ruido en V1."
+        "Mide la fuerza de asociación entre cada variable categórica y el target (ser 'Hot' o 'Cold'). Un valor cercano a 1 indica una asociación muy fuerte, mientras que cerca de 0 es débil.",
+        "Variables como `vehiculo_interes` y `origen` tienen la mayor capacidad predictiva. Otras, como `dia_semana_creacion`, tienen una asociación más débil por sí solas.",
+        "El análisis de Cramer's V en V2 ayudó a seleccionar las features más relevantes para el modelo, descartando aquellas con bajo poder predictivo que solo añadían ruido en V1."
     )
 
     top_cramer = cramers_df.sort_values("V", ascending=False).head(3)
@@ -740,16 +763,16 @@ def _render_eda(df, report):
             top_vehicle = vehicle_conv.sort_values(["count", "mean"], ascending=[False, True]).index[0]
             top_vehicle_rate = vehicle_conv.loc[top_vehicle, "mean"] * 100
     st.markdown("**Conclusiones del EDA**")
-    st.markdown(f"- Variables con mayor asociacion actual: {', '.join(top_cramer['Feature'].tolist())}.")
+    st.markdown(f"- Variables con mayor asociación actual: {', '.join(top_cramer['Feature'].tolist())}.")
     if top_vehicle is not None:
-        st.markdown(f"- Vehiculo de mayor volumen actual: `{top_vehicle}` con conversion de {top_vehicle_rate:.1f}%.")
+        st.markdown(f"- Vehículo de mayor volumen actual: `{top_vehicle}` con conversión de {top_vehicle_rate:.1f}%.")
     st.markdown("- Las cifras de este tab se recalculan sobre el dataset limpio actual; no se usan porcentajes fijos.")
 
-    st.subheader("2.6 Matriz de correlacion numerica")
+    st.subheader("2.6 Matriz de correlación numérica")
     st.caption("Permite identificar relaciones directas o inversas entre las variables temporales y de comportamiento frente al target.")
     num_cols = df.select_dtypes(include=[np.number]).columns
     
-    # Filtramos columnas sin varianza (ej. ano_creacion constante) y las de IDs que ensucian la matriz
+    # Filtramos columnas sin varianza (ej. año_creacion constante) y las de IDs que ensucian la matriz
     valid_cols = [col for col in num_cols if df[col].nunique() > 1 and not col.lower().endswith("id")]
     if len(valid_cols) > 1:
         corr = df[valid_cols].corr()
@@ -772,14 +795,14 @@ def _render_eda(df, report):
                 texttemplate="%{text}",
             )
         )
-        fig_corr.update_layout(title="Correlacion Lineal (Variables Numericas)", height=450)
+        fig_corr.update_layout(title="Correlación Lineal (Variables Numéricas)", height=450)
         fig_corr.update_yaxes(autorange="reversed")
         _plotly_layout(fig_corr)
-        st.plotly_chart(fig_corr, use_container_width=True, key="eda_corr")
+        st.plotly_chart(fig_corr, width="stretch", key="eda_corr")
         _chart_explainer(
-            "Muestra la correlaciÃ³n lineal de Pearson entre las variables numÃ©ricas. Los tonos rojos indican una correlaciÃ³n positiva (si una sube, la otra tambiÃ©n), los azules una correlaciÃ³n negativa (si una sube, la otra baja), y los blancos una correlaciÃ³n cercana a cero.",
-            "No se observan correlaciones extremadamente altas entre las features predictivas, lo que es bueno para evitar multicolinealidad. La correlaciÃ³n mÃ¡s fuerte es entre las variables de fecha (dÃ­a, mes, aÃ±o), lo cual es esperado.",
-            "En V2, la matriz se ordena por la correlaciÃ³n con el `target`, haciendo mÃ¡s fÃ¡cil identificar las relaciones mÃ¡s importantes. AdemÃ¡s, se excluyen columnas de ID que no aportan valor."
+            "Muestra la correlación lineal de Pearson entre las variables numéricas. Los tonos rojos indican una correlación positiva (si una sube, la otra también), los azules una correlación negativa (si una sube, la otra baja), y los blancos una correlación cercana a cero.",
+            "No se observan correlaciones extremadamente altas entre las features predictivas, lo que es bueno para evitar multicolinealidad. La correlación más fuerte es entre las variables de fecha (día, mes, año), lo cual es esperado.",
+            "En V2, la matriz se ordena por la correlación con el `target`, haciendo más fácil identificar las relaciones más importantes. Además, se excluyen columnas de ID que no aportan valor."
         )
 def _render_feature_engineering(df, report):
     st.header("3. Feature Engineering")
@@ -797,8 +820,8 @@ def _render_feature_engineering(df, report):
         f"compatibles con el modelo activo."
     )
 
-    st.subheader("3.1 Pipeline de transformacion")
-    st.caption("EvoluciÃ³n de las dimensiones: eliminamos fuga de datos (leakage) y compactamos las variables con tÃ©cnicas de Encoding.")
+    st.subheader("3.1 Pipeline de transformación")
+    st.caption("Evolución de las dimensiones: eliminamos fuga de datos (leakage) y compactamos las variables con técnicas de Encoding.")
     pipeline_df = pd.DataFrame(
         {
             "Paso": ["Crudo (Salesforce)", "Limpio (Sin leakage)", "Features finales (Modelo)"],
@@ -813,40 +836,40 @@ def _render_feature_engineering(df, report):
             marker=dict(color=["#636EFA", ACCENT, GOLD]),
         )
     )
-    fig.update_layout(title="ReducciÃ³n de dimensionalidad (Columnas)")
+    fig.update_layout(title="Reducción de dimensionalidad (Columnas)")
     _plotly_layout(fig, 340)
-    st.plotly_chart(fig, use_container_width=True, key="fe_funnel")
+    st.plotly_chart(fig, width="stretch", key="fe_funnel")
     _chart_explainer(
-        "El grÃ¡fico muestra cÃ³mo se reduce el nÃºmero de columnas desde el archivo crudo hasta las features finales que recibe el modelo.",
-        "Partimos de 27 columnas, limpiamos hasta quedarnos con 12 variables de negocio relevantes, y tras el encoding (transformaciÃ³n a nÃºmeros), el modelo trabaja con un set final de features optimizadas.",
-        "El pipeline V2 es mÃ¡s agresivo en la selecciÃ³n y transformaciÃ³n de features, utilizando tÃ©cnicas como One-Hot + variables derivadas para representar informaciÃ³n de manera mÃ¡s compacta y efectiva que el One-Hot Encoding simple de V1."
+        "El gráfico muestra cómo se reduce el número de columnas desde el archivo crudo hasta las features finales que recibe el modelo.",
+        "Partimos de 27 columnas, limpiamos hasta quedarnos con 12 variables de negocio relevantes, y tras el encoding (transformación a números), el modelo trabaja con un set final de features optimizadas.",
+        "El pipeline V2 es más agresivo en la selección y transformación de features, utilizando técnicas como One-Hot + variables derivadas para representar información de manera más compacta y efectiva que el One-Hot Encoding simple de V1."
     )
     with st.expander("Detalle de transformaciones"):
         st.dataframe(
             pd.DataFrame(
                 [
-                    {"Transformacion": "Features derivadas", "Detalle": "`es_fin_de_semana` y `franja_horaria`."},
+                    {"Transformación": "Features derivadas", "Detalle": "`es_fin_de_semana` y `franja_horaria`."},
                     {
-                        "Transformacion": "Eliminacion de leakage",
-                        "Detalle": "Se elimina `subtipo_interes` por riesgo de data leakage (refleja informacion post-clasificacion).",
+                        "Transformación": "Eliminación de leakage",
+                        "Detalle": "Se elimina `subtipo_interes` por riesgo de data leakage (refleja información post-clasificación).",
                     },
-                    {"Transformacion": "Agrupacion de categorias", "Detalle": "Categorias fuera de `known_categories` se mapean a `otros`."},
-                    {"Transformacion": "Codificacion One-Hot", "Detalle": "Variables categoricas seleccionadas se convierten en columnas binarias (0/1)."},
-                    {"Transformacion": "Alineacion final", "Detalle": "El DataFrame se reindexa a las features exactas esperadas por el modelo."},
+                    {"Transformación": "Agrupación de categorías", "Detalle": "Categorías fuera de `known_categories` se mapean a `otros`."},
+                    {"Transformación": "Codificación One-Hot", "Detalle": "Variables categóricas seleccionadas se convierten en columnas binarias (0/1)."},
+                    {"Transformación": "Alineación final", "Detalle": "El DataFrame se reindexa a las features exactas esperadas por el modelo."},
                 ]
             ),
-            use_container_width=True,
+            width="stretch",
             hide_index=True,
         )
-        st.caption("El desglose mostrado abajo refleja el artifact actualmente cargado en produccion.")
+        st.caption("El desglose mostrado abajo refleja el artifact actualmente cargado en producción.")
 
     st.subheader("3.2 Nueva feature: franja horaria")
-    st.caption("Se derivan las horas en 4 grandes franjas para que el modelo capture mejor el incremento de conversiÃ³n en la madrugada/noche.")
+    st.caption("Se derivan las horas en 4 grandes franjas para que el modelo capture mejor el incremento de conversión en la madrugada/noche.")
     df_temp = df.copy()
     df_temp["franja_horaria"] = df_temp["hora_creacion"].apply(
-        lambda hour: "madrugada" if hour < 6 else "manana" if hour < 12 else "tarde" if hour < 18 else "noche"
+        lambda hour: "madrugada" if hour < 6 else "mañana" if hour < 12 else "tarde" if hour < 18 else "noche"
     )
-    franja_conv = df_temp.groupby("franja_horaria")["target"].agg(["mean", "count"]).reindex(["madrugada", "manana", "tarde", "noche"])
+    franja_conv = df_temp.groupby("franja_horaria")["target"].agg(["mean", "count"]).reindex(["madrugada", "mañana", "tarde", "noche"])
     fig = go.Figure(
         go.Bar(
             x=franja_conv.index,
@@ -860,17 +883,17 @@ def _render_feature_engineering(df, report):
         )
     )
     fig.add_hline(y=df["target"].mean() * 100, line_dash="dash", line_color="gray")
-    fig.update_layout(title="Conversion por franja horaria", yaxis_title="% Hot")
+    fig.update_layout(title="Conversión por franja horaria", yaxis_title="% Hot")
     _plotly_layout(fig, 380)
-    st.plotly_chart(fig, use_container_width=True, key="fe_franja")
+    st.plotly_chart(fig, width="stretch", key="fe_franja")
     _chart_explainer(
-        "La grÃ¡fica muestra la tasa de conversiÃ³n promedio para cada una de las 4 franjas horarias creadas.",
-        "Agrupar las 24 horas en franjas captura un patrÃ³n claro: la conversiÃ³n es mÃ¡s alta en la 'madrugada' y 'noche'. Esta nueva feature es mÃ¡s simple y potente para el modelo que usar la hora individual.",
-        "Esta feature es una de las mejoras clave del pipeline V2. El modelo V1 usaba la hora como una variable numÃ©rica simple, perdiendo la oportunidad de capturar estos patrones no lineales."
+        "La gráfica muestra la tasa de conversión promedio para cada una de las 4 franjas horarias creadas.",
+        "Agrupar las 24 horas en franjas captura un patrón claro: la conversión es más alta en la 'madrugada' y 'noche'. Esta nueva feature es más simple y potente para el modelo que usar la hora individual.",
+        "Esta feature es una de las mejoras clave del pipeline V2. El modelo V1 usaba la hora como una variable numérica simple, perdiendo la oportunidad de capturar estos patrones no lineales."
     )
 
-    st.subheader("3.3 Reduccion de categorias")
-    st.caption("Las categorÃ­as muy raras (< 1% de apariciÃ³n) se agrupan en 'otros' para evitar que el modelo las memorice y sufra sobreajuste (overfitting).")
+    st.subheader("3.3 Reducción de categorías")
+    st.caption("Las categorías muy raras (< 1% de aparición) se agrupan en 'otros' para evitar que el modelo las memorice y sufra sobreajuste (overfitting).")
     rows = []
     for feature, valid_categories in known_categories.items():
         before = int(df[feature].nunique()) if feature in df.columns else np.nan
@@ -879,14 +902,14 @@ def _render_feature_engineering(df, report):
             {
                 "Feature": feature,
                 "Antes": before,
-                "Despues": after,
+                "Después": after,
                 "Agrupadas en otros": before - after if pd.notna(before) else np.nan,
             }
         )
     reduction_df = pd.DataFrame(rows)
     if not reduction_df.empty:
         fig = go.Figure()
-        fig.add_trace(go.Bar(name="Se mantienen", y=reduction_df["Feature"], x=reduction_df["Despues"], orientation="h", marker_color=ACCENT))
+        fig.add_trace(go.Bar(name="Se mantienen", y=reduction_df["Feature"], x=reduction_df["Después"], orientation="h", marker_color=ACCENT))
         fig.add_trace(
             go.Bar(
                 name="Agrupadas en otros",
@@ -896,17 +919,17 @@ def _render_feature_engineering(df, report):
                 marker_color=HOT_COLOR,
             )
         )
-        fig.update_layout(barmode="stack", title="Categorias antes y despues", xaxis_title="Numero de categorias")
+        fig.update_layout(barmode="stack", title="Categorías antes y después", xaxis_title="Número de categorías")
         _plotly_layout(fig, 340)
-        st.plotly_chart(fig, use_container_width=True, key="fe_categories")
+        st.plotly_chart(fig, width="stretch", key="fe_categories")
         _chart_explainer(
-            "Compara la cantidad de categorÃ­as Ãºnicas por variable antes (azul+rojo) y despuÃ©s (azul) de la limpieza. Las categorÃ­as en rojo son las que se agruparon en 'otros' por ser poco frecuentes.",
-            "Variables como `nombre_formulario` o `campana` tienen cientos de categorÃ­as, la mayorÃ­a con muy pocos ejemplos. Agruparlas reduce el riesgo de que el modelo 'memorice' casos raros (overfitting).",
-            "El pipeline V2 formaliza este agrupamiento usando un `known_categories.json`, asegurando que el modelo en producciÃ³n trate las nuevas categorÃ­as de forma consistente, a diferencia de V1 que podÃ­a fallar ante valores no vistos."
+            "Compara la cantidad de categorías únicas por variable antes (azul+rojo) y después (azul) de la limpieza. Las categorías en rojo son las que se agruparon en 'otros' por ser poco frecuentes.",
+            "Variables como `nombre_formulario` o `campana` tienen cientos de categorías, la mayoría con muy pocos ejemplos. Agruparlas reduce el riesgo de que el modelo 'memorice' casos raros (overfitting).",
+            "El pipeline V2 formaliza este agrupamiento usando un `known_categories.json`, asegurando que el modelo en producción trate las nuevas categorías de forma consistente, a diferencia de V1 que podía fallar ante valores no vistos."
         )
-        st.dataframe(reduction_df, use_container_width=True, hide_index=True)
+        st.dataframe(reduction_df, width="stretch", hide_index=True)
     else:
-        st.info("No se registraron agrupaciones de categorÃ­as de baja frecuencia en los artefactos actuales.")
+        st.info("No se registraron agrupaciones de categorías de baja frecuencia en los artefactos actuales.")
 
     st.subheader("3.4 Dataset final")
     col1, col2, col3 = st.columns(3)
@@ -920,7 +943,7 @@ def _render_feature_engineering(df, report):
         f"Sin columnas de texto en la matriz final (todo codificado)."
     )
     st.caption(
-        "Split estratificado 80/20 manteniendo la distribucion del target en ambos conjuntos. "
+        "Split estratificado 80/20 manteniendo la distribución del target en ambos conjuntos. "
         f"Hot rate train: {train_hot_rate:.2f}% | Hot rate test: {test_hot_rate:.2f}%."
     )
 
@@ -928,7 +951,7 @@ def _render_feature_engineering(df, report):
     encoding_breakdown_df = pd.DataFrame(
         [
             {"Tipo": "One-Hot Encoded", "Features": one_hot_count},
-            {"Tipo": "Numericas/Derivadas", "Features": numeric_derived_count},
+            {"Tipo": "Numéricas/Derivadas", "Features": numeric_derived_count},
         ]
     )
     fig_dim = go.Figure(
@@ -941,24 +964,24 @@ def _render_feature_engineering(df, report):
         )
     )
     fig_dim.update_layout(
-        title=f"Composicion de features finales ({n_features} total)",
-        yaxis_title="Numero de features",
+        title=f"Composición de features finales ({n_features} total)",
+        yaxis_title="Número de features",
     )
     _plotly_layout(fig_dim, 340)
-    st.plotly_chart(fig_dim, use_container_width=True, key="fe_encoding_breakdown")
+    st.plotly_chart(fig_dim, width="stretch", key="fe_encoding_breakdown")
     _chart_explainer(
-        "Desglosa el nÃºmero total de features que recibe el modelo segÃºn la tÃ©cnica de encoding utilizada.",
-        "La mayorÃ­a de las features provienen de la codificaciÃ³n One-Hot de variables como `origen_creacion`. Las variables de alta cardinalidad son tratadas con One-Hot + variables derivadas para controlar la dimensionalidad.",
-        "El modelo V2 introduce el One-Hot + variables derivadas, una tÃ©cnica mÃ¡s sofisticada que el One-Hot puro usado en V1. Esto permite incluir mÃ¡s informaciÃ³n sin crear un nÃºmero excesivo de columnas, resultando en un modelo mÃ¡s robusto."
+        "Desglosa el número total de features que recibe el modelo según la técnica de encoding utilizada.",
+        "La mayoría de las features provienen de la codificación One-Hot de variables como `origen_creacion`. Las variables de alta cardinalidad son tratadas con One-Hot + variables derivadas para controlar la dimensionalidad.",
+        "El modelo V2 introduce el One-Hot + variables derivadas, una técnica más sofisticada que el One-Hot puro usado en V1. Esto permite incluir más información sin crear un número excesivo de columnas, resultando en un modelo más robusto."
     )
-    st.dataframe(encoding_breakdown_df, use_container_width=True, hide_index=True)
+    st.dataframe(encoding_breakdown_df, width="stretch", hide_index=True)
     st.markdown(
-        "- **One-Hot Encoded:** una columna de texto/categoria se divide en varias columnas binarias (0/1), "
-        "una por cada categoria relevante. Ejemplo: `origen_creacion` -> `origen_creacion_ONE`, `origen_creacion_RRSS`, etc.\n"
-        "- **Numericas/Derivadas:** variables numericas directas (por ejemplo `hora_creacion`) "
+        "- **One-Hot Encoded:** una columna de texto/categoría se divide en varias columnas binarias (0/1), "
+        "una por cada categoría relevante. Ejemplo: `origen_creacion` -> `origen_creacion_ONE`, `origen_creacion_RRSS`, etc.\n"
+        "- **Numéricas/Derivadas:** variables numéricas directas (por ejemplo `hora_creacion`) "
         "o creadas a partir de otras (`es_fin_de_semana`, `franja_horaria` transformada)."
     )
-    st.info("Esta vista describe unicamente la composicion real del artifact V2 desplegado.")
+    st.info("Esta vista describe únicamente la composición real del artifact V2 desplegado.")
 
 
 def _render_modeling(report):
@@ -969,14 +992,14 @@ def _render_modeling(report):
     dataset_name = report["dataset_name"]
 
     st.markdown(
-        f"El modelo desplegado hoy es **{_format_model_name(model)}** y se evalua sobre **{dataset_name}** "
+        f"El modelo desplegado hoy es **{_format_model_name(model)}** y se evalúa sobre **{dataset_name}** "
         f"con **{report['X_test'].shape[0]:,} leads**."
     )
 
     st.subheader("4.1 Estado del benchmark")
     st.info(
-        "No se encontro un archivo de benchmark versionado para comparar modelos en runtime. "
-        "Las comparaciones historicas deben publicarse desde un artifact dedicado; por ahora se muestra solo el modelo activo."
+        "No se encontró un archivo de benchmark versionado para comparar modelos en runtime. "
+        "Las comparaciones históricas deben publicarse desde un artifact dedicado; por ahora se muestra solo el modelo activo."
     )
 
     st.subheader("4.2 Curva ROC")
@@ -997,11 +1020,11 @@ def _render_modeling(report):
     fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode="lines", name="Azar (AUC=0.5)", line=dict(color="gray", dash="dash")))
     fig.update_layout(title=f"Curva ROC - {_format_model_name(model)}", xaxis_title="FPR", yaxis_title="TPR")
     _plotly_layout(fig, 430)
-    st.plotly_chart(fig, use_container_width=True, key="mod_roc")
+    st.plotly_chart(fig, width="stretch", key="mod_roc")
     _chart_explainer(
-        "La curva ROC muestra quÃ© tan bueno es el modelo para distinguir entre clases. Un modelo perfecto estarÃ­a pegado a la esquina superior izquierda (TPR=1, FPR=0). El Ã¡rea bajo la curva (AUC) resume su rendimiento: 1.0 es perfecto, 0.5 es azar.",
-        f"El modelo actual tiene un AUC de {metrics['ROC-AUC']:.4f}, lo que indica una capacidad de discriminaciÃ³n buena, muy superior al azar.",
-        "El modelo V2 muestra un AUC superior al de V1, gracias a la limpieza de datos mÃ¡s estricta y al feature engineering mejorado, lo que le permite separar mejor las clases."
+        "La curva ROC muestra qué tan bueno es el modelo para distinguir entre clases. Un modelo perfecto estaría pegado a la esquina superior izquierda (TPR=1, FPR=0). El área bajo la curva (AUC) resume su rendimiento: 1.0 es perfecto, 0.5 es azar.",
+        f"El modelo actual tiene un AUC de {metrics['ROC-AUC']:.4f}, lo que indica una capacidad de discriminación buena, muy superior al azar.",
+        "El modelo V2 muestra un AUC superior al de V1, gracias a la limpieza de datos más estricta y al feature engineering mejorado, lo que le permite separar mejor las clases."
     )
 
     st.subheader("4.3 Importancia de features")
@@ -1021,11 +1044,11 @@ def _render_modeling(report):
         )
         fig.update_layout(title="Top features del modelo activo", xaxis_title="Importancia")
         _plotly_layout(fig, 550)
-        st.plotly_chart(fig, use_container_width=True, key="mod_importance")
+        st.plotly_chart(fig, width="stretch", key="mod_importance")
         _chart_explainer(
-            "El grÃ¡fico muestra las 20 features que mÃ¡s influyen en las predicciones del modelo. Una barra mÃ¡s larga significa mayor importancia.",
-            "Las variables relacionadas con el vehÃ­culo de interÃ©s y el origen del lead son consistentemente las mÃ¡s importantes. Features derivadas como `franja_horaria` tambiÃ©n demuestran tener un impacto significativo.",
-            "En V2, las importancias son mÃ¡s interpretables. Features que antes dominaban por data leakage (como `subtipo_interes`) han sido eliminadas, revelando los verdaderos drivers de negocio."
+            "El gráfico muestra las 20 features que más influyen en las predicciones del modelo. Una barra más larga significa mayor importancia.",
+            "Las variables relacionadas con el vehículo de interés y el origen del lead son consistentemente las más importantes. Features derivadas como `franja_horaria` también demuestran tener un impacto significativo.",
+            "En V2, las importancias son más interpretables. Features que antes dominaban por data leakage (como `subtipo_interes`) han sido eliminadas, revelando los verdaderos drivers de negocio."
         )
 
         top5 = feature_importances.head(5)
@@ -1033,14 +1056,14 @@ def _render_modeling(report):
         for rank, (feature, value) in enumerate(top5.items(), start=1):
             st.markdown(f"{rank}. `{feature}`: {value:.1%}")
 
-    st.subheader("4.4 Metricas del modelo activo")
-    metrics_df = pd.DataFrame([{"Metrica": name, "Valor": value} for name, value in metrics.items()])
+    st.subheader("4.4 Métricas del modelo activo")
+    metrics_df = pd.DataFrame([{"Métrica": name, "Valor": value} for name, value in metrics.items()])
     metrics_df["Valor"] = metrics_df.apply(
-        lambda row: f"{row['Valor']:.4f}" if row["Metrica"] == "ROC-AUC" else f"{row['Valor']:.1%}",
+        lambda row: f"{row['Valor']:.4f}" if row["Métrica"] == "ROC-AUC" else f"{row['Valor']:.1%}",
         axis=1,
     )
-    st.dataframe(metrics_df, use_container_width=True, hide_index=True)
-    st.caption("La validacion cruzada no se muestra porque el artifact actual no guarda resultados fold-by-fold.")
+    st.dataframe(metrics_df, width="stretch", hide_index=True)
+    st.caption("La validación cruzada no se muestra porque el artifact actual no guarda resultados fold-by-fold.")
 def _render_modeling(report):
     st.header("4. Modelado")
     model = report["model"]
@@ -1049,11 +1072,11 @@ def _render_modeling(report):
     dataset_name = report["dataset_name"]
 
     st.markdown(
-        f"El modelo desplegado hoy es **{_format_model_name(model)}** y se evalua sobre **{dataset_name}** "
+        f"El modelo desplegado hoy es **{_format_model_name(model)}** y se evalúa sobre **{dataset_name}** "
         f"con **{report['X_test'].shape[0]:,} leads**."
     )
 
-    st.subheader("4.1 Comparacion de modelos (referencia notebook 03)")
+    st.subheader("4.1 Comparación de modelos (referencia notebook 03)")
     benchmark_rows = [
         {"Modelo": "Logistic Regression", "Accuracy": 0.704, "Precision": 0.633, "Recall": 0.431, "F1": 0.513, "ROC-AUC": 0.742},
         {"Modelo": "Random Forest", "Accuracy": 0.733, "Precision": 0.667, "Recall": 0.503, "F1": 0.573, "ROC-AUC": 0.770},
@@ -1061,57 +1084,58 @@ def _render_modeling(report):
         {"Modelo": "LightGBM", "Accuracy": 0.736, "Precision": 0.671, "Recall": 0.512, "F1": 0.581, "ROC-AUC": 0.777},
     ]
     benchmark_df = pd.DataFrame(benchmark_rows).sort_values("ROC-AUC", ascending=False).reset_index(drop=True)
-    benchmark_df["Ganador"] = benchmark_df["Modelo"].eq("Gradient Boosting").map(lambda flag: "Si" if flag else "")
+    benchmark_df["Ganador"] = benchmark_df["Modelo"].eq("Gradient Boosting").map(lambda flag: "Sí" if flag else "")
     for metric_name in ["Accuracy", "Precision", "Recall", "F1", "ROC-AUC"]:
         benchmark_df[metric_name] = benchmark_df[metric_name].map(lambda value: f"{value:.3f}")
     st.dataframe(
         benchmark_df[["Modelo", "Accuracy", "Precision", "Recall", "F1", "ROC-AUC", "Ganador"]],
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
     )
     st.caption(
         "Tabla de referencia del benchmark V2 (notebook 03). "
         "El modelo ganador fue Gradient Boosting."
     )
-    with st.expander("Para que sirve cada modelo y que aporta aqui", expanded=True):
+    with st.expander("Para qué sirve cada modelo y qué aporta aquí", expanded=True):
         st.markdown(
-            "- **Logistic Regression:** modelo base simple y facil de explicar. "
-            "Sirve como punto de partida para validar que el pipeline tiene senal real.\n"
-            "- **Random Forest:** combina muchos arboles y suele ser robusto con datos mixtos "
-            "(categoricos + numericos), con buena estabilidad general.\n"
-            "- **Gradient Boosting (ganador):** corrige errores arbol por arbol y captura mejor relaciones no lineales. "
-            "En este proyecto logra el mejor equilibrio de metricas.\n"
-            "- **LightGBM:** variante de boosting muy eficiente para escalar y reentrenar rapido. "
-            "Quedo cerca del ganador y es buena opcion operativa."
+            "- **Logistic Regression:** modelo base simple y fácil de explicar. "
+            "Sirve como punto de partida para validar que el pipeline tiene señal real.\n"
+            "- **Random Forest:** combina muchos árboles y suele ser robusto con datos mixtos "
+            "(categóricos + numéricos), con buena estabilidad general.\n"
+            "- **Gradient Boosting (ganador):** corrige errores árbol por árbol y captura mejor relaciones no lineales. "
+            "En este proyecto logra el mejor equilibrio de métricas.\n"
+            "- **LightGBM:** variante de boosting muy eficiente para escalar y reentrenar rápido. "
+            "Quedó cerca del ganador y es buena opción operativa."
         )
         st.markdown(
-            "Resumen practico: Logistic ayuda a interpretar, Random Forest aporta robustez, "
+            "Resumen práctico: Logistic ayuda a interpretar, Random Forest aporta robustez, "
             "y los modelos de boosting (Gradient Boosting / LightGBM) capturan mejor la complejidad del problema."
         )
 
-    st.subheader("4.2 Hiperparametros del modelo activo")
-    with st.expander("Ver hiperparametros", expanded=False):
+    st.subheader("4.2 Hiperparámetros del modelo activo")
+    with st.expander("Ver hiperparámetros", expanded=False):
         params = model.get_params() if hasattr(model, "get_params") else {}
         if params:
             params_df = pd.DataFrame(
-                [{"Parametro": key, "Valor": str(value)} for key, value in sorted(params.items(), key=lambda item: item[0])]
+                [{"Parámetro": key, "Valor": str(value)} for key, value in sorted(params.items(), key=lambda item: item[0])]
             )
-            st.dataframe(params_df, use_container_width=True, hide_index=True)
+            st.dataframe(params_df, width="stretch", hide_index=True)
         else:
-            st.info("El modelo activo no expone hiperparametros via `get_params()`.")
-    with st.expander("Que significan los hiperparametros del ganador (explicado simple)", expanded=True):
+            st.info("El modelo activo no expone hiperparámetros vía `get_params()`.")
+
+    with st.expander("Qué significan los hiperparámetros del ganador (explicado simple)", expanded=True):
         st.markdown(
-            "- **n_estimators (ej. 200):** cantidad de arboles que se entrenan. "
-            "Mas arboles pueden mejorar precision, pero tambien aumentan tiempo y riesgo de sobreajuste.\n"
-            "- **max_depth (ej. 5):** que tan profundo puede crecer cada arbol. "
+            "- **n_estimators (ej. 200):** cantidad de árboles que se entrenan. "
+            "Más árboles pueden mejorar precisión, pero también aumentan tiempo y riesgo de sobreajuste.\n"
+            "- **max_depth (ej. 5):** qué tan profundo puede crecer cada árbol. "
             "Profundidad moderada ayuda a captar patrones sin memorizar ruido.\n"
-            "- **learning_rate (ej. 0.1):** tamano del paso en cada iteracion. "
-            "Un valor menor aprende mas lento pero suele generalizar mejor.\n"
-            "- **min_samples_leaf (ej. 10):** minimo de registros por hoja. "
-            "Evita reglas demasiado especificas y hace el modelo mas estable."
+            "- **learning_rate (ej. 0.1):** tamaño del paso en cada iteración. "
+            "Un valor menor aprende más lento pero suele generalizar mejor.\n"
+            "- **min_samples_leaf (ej. 10):** mínimo de registros por hoja. "
+            "Evita reglas demasiado específicas y hace el modelo más estable."
         )
         st.markdown(
-            "Lectura practica para negocio: estos parametros buscan equilibrio entre "
+            "Lectura práctica para negocio: estos parámetros buscan equilibrio entre "
             "**capturar oportunidades reales** y **evitar falsas alarmas por ruido**."
         )
 
@@ -1132,11 +1156,11 @@ def _render_modeling(report):
         )
         fig.update_layout(title="Top features del modelo activo", xaxis_title="Importancia")
         _plotly_layout(fig, 550)
-        st.plotly_chart(fig, use_container_width=True, key="mod_importance")
+        st.plotly_chart(fig, width="stretch", key="mod_importance")
         _chart_explainer(
-            "Barras mas largas significan mayor impacto relativo de la feature en la prediccion.",
-            "Las variables de origen/formulario y atributos de interes suelen concentrar la mayor senal.",
-            "En V2 las importancias son mas confiables al remover features con leakage de V1."
+            "Barras más largas significan mayor impacto relativo de la feature en la predicción.",
+            "Las variables de origen/formulario y atributos de interés suelen concentrar la mayor señal.",
+            "En V2 las importancias son más confiables al remover features con leakage de V1."
         )
 
         top5 = feature_importances.head(5)
@@ -1144,36 +1168,36 @@ def _render_modeling(report):
         for rank, (feature, value) in enumerate(top5.items(), start=1):
             st.markdown(f"{rank}. `{feature}`: {value:.1%}")
 
-    st.subheader("4.4 Metricas del modelo activo")
-    metrics_df = pd.DataFrame([{"Metrica": name, "Valor": value} for name, value in metrics.items()])
+    st.subheader("4.4 Métricas del modelo activo")
+    metrics_df = pd.DataFrame([{"Métrica": name, "Valor": value} for name, value in metrics.items()])
     metrics_df["Valor"] = metrics_df.apply(
-        lambda row: f"{row['Valor']:.4f}" if row["Metrica"] == "ROC-AUC" else f"{row['Valor']:.1%}",
+        lambda row: f"{row['Valor']:.4f}" if row["Métrica"] == "ROC-AUC" else f"{row['Valor']:.1%}",
         axis=1,
     )
-    st.dataframe(metrics_df, use_container_width=True, hide_index=True)
-    with st.expander("Que significa cada metrica (explicado simple)", expanded=True):
+    st.dataframe(metrics_df, width="stretch", hide_index=True)
+    with st.expander("Qué significa cada métrica (explicado simple)", expanded=True):
         st.markdown(
-            "- **Accuracy:** porcentaje total de aciertos (Hot y Cold) sobre todos los leads.\n"
-            "- **Precision:** de los leads que el modelo marca como Hot, cuantos realmente eran Hot.\n"
-            "- **Recall:** de todos los Hot reales, cuantos logra detectar el modelo.\n"
-            "- **F1:** equilibrio entre Precision y Recall en un solo numero.\n"
-            "- **ROC-AUC:** capacidad general del modelo para ordenar Hot por encima de Cold (1.0 es excelente, 0.5 es azar)."
+            "- **Accuracy:** porcentaje total de aciertos del modelo (Hot y Cold).\n"
+            "- **Precision:** de los leads que el modelo marca como Hot, cuántos realmente eran Hot.\n"
+            "- **Recall:** de todos los Hot reales, cuántos logra detectar el modelo.\n"
+            "- **F1:** equilibrio entre Precision y Recall en un solo valor.\n"
+            "- **ROC-AUC:** capacidad general del modelo para ordenar Hot por encima de Cold (1.0 excelente, 0.5 azar)."
         )
         st.markdown(
             "En negocio automotriz normalmente **Recall** importa mucho (no dejar escapar oportunidades), "
             "sin descuidar **Precision** para no saturar al equipo comercial con falsos positivos."
         )
 
-    st.subheader("4.5 Validacion cruzada (referencia)")
+    st.subheader("4.5 Validación cruzada (referencia)")
     cv_mean = 0.7791
     cv_std = 0.0049
     st.info(
         "Referencia notebook 03 (5-fold CV): ROC-AUC = 0.7791 +/- 0.0049. "
-        "Este valor corresponde al experimento de entrenamiento V2 y se muestra como benchmark historico."
+        "Este valor corresponde al experimento de entrenamiento V2 y se muestra como benchmark histórico."
     )
     st.markdown(
-        "La validacion cruzada divide los datos en 5 partes y repite el entrenamiento/prueba varias veces. "
-        "Sirve para comprobar que el rendimiento no depende de una sola particion train/test."
+        "La validación cruzada divide los datos en 5 partes y repite el entrenamiento/prueba varias veces. "
+        "Sirve para comprobar que el rendimiento no depende de una sola partición train/test."
     )
     cv_df = pd.DataFrame(
         [
@@ -1194,16 +1218,16 @@ def _render_modeling(report):
     )
     fig_cv.update_layout(title="Referencia de estabilidad ROC-AUC", yaxis_title="ROC-AUC", yaxis_range=[0.70, 0.82])
     _plotly_layout(fig_cv, 320)
-    st.plotly_chart(fig_cv, use_container_width=True, key="mod_cv_reference")
+    st.plotly_chart(fig_cv, width="stretch", key="mod_cv_reference")
     _chart_explainer(
-        "Compara el rendimiento promedio de validacion cruzada contra el resultado del test actual.",
-        "La desviacion pequena (+/- 0.0049) sugiere comportamiento estable entre folds.",
-        "V2 muestra mas consistencia que V1 al entrenar con pipeline depurado y menos leakage."
+        "Compara el rendimiento promedio de validación cruzada contra el resultado del test actual.",
+        "La desviación pequeña (+/- 0.0049) sugiere comportamiento estable entre folds.",
+        "V2 muestra más consistencia que V1 al entrenar con pipeline depurado y menos leakage."
     )
 
 
 def _render_evaluation(report):
-    st.header("5. Evaluacion Detallada")
+    st.header("5. Evaluación Detallada")
     y_test = report["y_test"]
     y_proba = report["y_proba"]
     threshold = report["umbral"]
@@ -1214,11 +1238,11 @@ def _render_evaluation(report):
     hot_rate = float(y_test.mean())
     best_f1 = report["best_f1_row"]
 
-    st.subheader(f"5.1 Metricas finales (umbral = {threshold:.3f})")
+    st.subheader(f"5.1 Métricas finales (umbral = {threshold:.3f})")
     st.caption(
-        "Estas metricas resumen como rinde el modelo con el umbral activo. "
+        "Estas métricas resumen cómo rinde el modelo con el umbral activo. "
         "La idea de este corte es simple: detectar la mayor cantidad posible de oportunidades reales "
-        "sin mandar demasiados leads frios al equipo comercial."
+        "sin mandar demasiados leads fríos al equipo comercial."
     )
     gauge_fig = make_subplots(rows=1, cols=5, specs=[[{"type": "indicator"}] * 5], subplot_titles=["Accuracy", "Precision", "Recall", "F1", "ROC-AUC"])
     gauge_colors = ["#636EFA", "#AB63FA", ACCENT, "#FFA15A", GOLD]
@@ -1240,28 +1264,28 @@ def _render_evaluation(report):
             col=idx,
         )
     gauge_fig.update_layout(height=220, margin=dict(l=10, r=10, t=40, b=10))
-    st.plotly_chart(gauge_fig, use_container_width=True, key="eval_gauge")
+    st.plotly_chart(gauge_fig, width="stretch", key="eval_gauge")
     _chart_explainer(
-        "Estos medidores muestran las mÃ©tricas de rendimiento clave del modelo con el umbral de decisiÃ³n actual. 'Recall' (Sensibilidad) es especialmente importante: mide cuÃ¡ntos leads 'Hot' reales logramos capturar.",
-        f"Con el umbral actual, el modelo captura el {metrics['Recall']:.1%} de los leads 'Hot'. La precisiÃ³n del {metrics['Precision']:.1%} indica que de los leads que se marcan como 'Hot', ese porcentaje es correcto.",
-        "El modelo V2 fue optimizado para mejorar el Recall sin sacrificar demasiada PrecisiÃ³n, un equilibrio mÃ¡s alineado con los objetivos de negocio que el enfoque de V1, que priorizaba la precisiÃ³n general (Accuracy)."
+        "Estos medidores muestran las métricas de rendimiento clave del modelo con el umbral de decisión actual. 'Recall' (Sensibilidad) es especialmente importante: mide cuántos leads 'Hot' reales logramos capturar.",
+        f"Con el umbral actual, el modelo captura el {metrics['Recall']:.1%} de los leads 'Hot'. La precisión del {metrics['Precision']:.1%} indica que de los leads que se marcan como 'Hot', ese porcentaje es correcto.",
+        "El modelo V2 fue optimizado para mejorar el Recall sin sacrificar demasiada Precisión, un equilibrio más alineado con los objetivos de negocio que el enfoque de V1, que priorizaba la precisión general (Accuracy)."
     )
-    with st.expander("Que significa cada metrica en 5.1 (explicado simple)", expanded=False):
+    with st.expander("Qué significa cada métrica en 5.1 (explicado simple)", expanded=False):
         st.markdown(
             "- **Accuracy:** porcentaje total de aciertos del modelo (Hot y Cold).\n"
-            "- **Precision:** de los leads marcados como Hot, cuantos realmente eran Hot.\n"
-            "- **Recall:** de todos los Hot reales, cuantos logro detectar el modelo.\n"
+            "- **Precision:** de los leads que el modelo marca como Hot, cuántos realmente eran Hot.\n"
+            "- **Recall:** de todos los Hot reales, cuántos logra detectar el modelo.\n"
             "- **F1:** balance entre Precision y Recall en un solo valor.\n"
-            "- **ROC-AUC:** capacidad general de separar Hot por encima de Cold (1.0 excelente, 0.5 azar)."
+            "- **ROC-AUC:** capacidad general del modelo para ordenar Hot por encima de Cold (1.0 excelente, 0.5 azar)."
         )
         st.markdown(
-            "En esta aplicacion, Recall y Precision suelen ser las metricas mas sensibles: "
-            "Recall evita perder oportunidades y Precision evita saturar al equipo con falsos positivos."
+            "En esta aplicación, Recall y Precision suelen ser las métricas más sensibles: "
+            "Recall evita perder oportunidades y Precision evita saturar al equipo comercial con falsos positivos."
         )
-    st.subheader(f"5.2 Matriz de confusion (umbral = {threshold:.3f})")
+    st.subheader(f"5.2 Matriz de confusión (umbral = {threshold:.3f})")
     st.caption(
-        "La matriz de confusion muestra en que acierta y en que se equivoca el modelo. "
-        "En este negocio duele mas dejar escapar un Hot Lead que revisar algun Cold Lead de mas."
+        "La matriz de confusión muestra en qué acierta y en qué se equivoca el modelo. "
+        "En este negocio duele más dejar escapar un Hot Lead que revisar algún Cold Lead de más."
     )
     col1, col2 = st.columns(2)
     with col1:
@@ -1279,7 +1303,7 @@ def _render_evaluation(report):
         )
         cm_fig.update_layout(title="Cantidades")
         _plotly_layout(cm_fig, 350)
-        st.plotly_chart(cm_fig, use_container_width=True, key="eval_cm")
+        st.plotly_chart(cm_fig, width="stretch", key="eval_cm")
 
     with col2:
         st.dataframe(
@@ -1291,19 +1315,19 @@ def _render_evaluation(report):
                     {"Resultado": "Verdaderos Positivos", "Cantidad": tp, "%": f"{tp / total:.1%}"},
                 ]
             ),
-            use_container_width=True,
+            width="stretch",
             hide_index=True,
         )
     _chart_explainer(
-        "La matriz cruza la realidad ('Real') con las predicciones del modelo ('Pred'). Los Falsos Negativos (FN) son oportunidades perdidas, y los Falsos Positivos (FP) son leads frÃ­os que se marcan como calientes.",
-        f"Actualmente, el modelo deja escapar {fn} oportunidades (FN) pero a cambio solo genera {fp} falsas alarmas (FP). Este balance se considera aceptable para la operaciÃ³n.",
-        "El modelo V2, con su umbral ajustado, reduce significativamente los Falsos Negativos en comparaciÃ³n con V1 (que usaba un umbral de 0.5), aceptando un ligero aumento en Falsos Positivos para no perder ventas."
+        "La matriz cruza la realidad ('Real') con las predicciones del modelo ('Pred'). Los Falsos Negativos (FN) son oportunidades perdidas, y los Falsos Positivos (FP) son leads fríos que se marcan como calientes.",
+        f"Actualmente, el modelo deja escapar {fn} oportunidades (FN) pero a cambio solo genera {fp} falsas alarmas (FP). Este balance se considera aceptable para la operación.",
+        "El modelo V2, con su umbral ajustado, reduce significativamente los Falsos Negativos en comparación con V1 (que usaba un umbral de 0.5), aceptando un ligero aumento en Falsos Positivos para no perder ventas."
     )
 
     st.subheader("5.3 Curvas ROC y Precision-Recall")
     st.caption(
         "Estas curvas ayudan a entender la calidad general del modelo. "
-        "La ROC mide que tan bien separa Hot de Cold; la Precision-Recall muestra mejor el costo real de intentar capturar mas Hot Leads."
+        "La ROC mide qué tan bien separa Hot de Cold; la Precision-Recall muestra mejor el costo real de intentar capturar más Hot Leads."
     )
     col1, col2 = st.columns(2)
     with col1:
@@ -1313,23 +1337,23 @@ def _render_evaluation(report):
         roc_fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode="lines", line=dict(dash="dash", color="gray")))
         roc_fig.update_layout(title="Curva ROC", xaxis_title="FPR", yaxis_title="TPR")
         _plotly_layout(roc_fig, 380)
-        st.plotly_chart(roc_fig, use_container_width=True, key="eval_roc")
+        st.plotly_chart(roc_fig, width="stretch", key="eval_roc")
     with col2:
         prec_arr, rec_arr, _ = precision_recall_curve(y_test, y_proba)
         pr_fig = go.Figure()
         pr_fig.add_trace(go.Scatter(x=rec_arr, y=prec_arr, mode="lines", line=dict(color="#AB63FA", width=3)))
         pr_fig.update_layout(title="Curva Precision-Recall", xaxis_title="Recall", yaxis_title="Precision")
         _plotly_layout(pr_fig, 380)
-        st.plotly_chart(pr_fig, use_container_width=True, key="eval_pr")
+        st.plotly_chart(pr_fig, width="stretch", key="eval_pr")
     _chart_explainer(
-        "La curva ROC (izquierda) mide la capacidad de separaciÃ³n general del modelo. La curva Precision-Recall (derecha) es mÃ¡s informativa para datasets desbalanceados, mostrando el 'costo' en precisiÃ³n al intentar aumentar el recall.",
-        "La forma de la curva PR muestra que para capturar mÃ¡s del 80-90% de los leads Hot (alto Recall), la precisiÃ³n comienza a caer notablemente. El umbral actual busca un punto Ã³ptimo en esta curva.",
-        "El modelo V2 tiene un Ã¡rea bajo la curva PR superior a V1, lo que significa que para cualquier nivel de Recall, generalmente se obtiene una mejor PrecisiÃ³n. Es un modelo globalmente superior."
+        "La curva ROC (izquierda) mide la capacidad de separación general del modelo. La curva Precision-Recall (derecha) es más informativa para datasets desbalanceados, mostrando el 'costo' en precisión al intentar aumentar el recall.",
+        "La forma de la curva PR muestra que para capturar más del 80-90% de los leads Hot (alto Recall), la precisión comienza a caer notablemente. El umbral actual busca un punto óptimo en esta curva.",
+        "El modelo V2 tiene un área bajo la curva PR superior a V1, lo que significa que para cualquier nivel de Recall, generalmente se obtiene una mejor Precisión. Es un modelo globalmente superior."
     )
-    st.subheader(f"5.4 Analisis de umbral de decision (umbral activo = {threshold:.3f})")
+    st.subheader(f"5.4 Análisis de umbral de decisión (umbral activo = {threshold:.3f})")
     st.caption(
-        "Mover el umbral cambia la politica comercial: mas bajo captura mas oportunidades, mas alto filtra mas fuerte. "
-        "El punto elegido busca un equilibrio facil de defender."
+        "Mover el umbral cambia la política comercial: más bajo captura más oportunidades, más alto filtra más fuerte. "
+        "El punto elegido busca un equilibrio fácil de defender."
     )
     threshold_df = report["threshold_df"]
     fig = go.Figure()
@@ -1343,13 +1367,7 @@ def _render_evaluation(report):
                 line=dict(color=color, width=2.5),
             )
         )
-    fig.add_vline(
-        x=0.5,
-        line_dash="dash",
-        line_color="gray",
-        annotation_text="0.500",
-        annotation_position="top left",
-    )
+    fig.add_vline(x=0.5, line_dash="dash", line_color="gray")
     fig.add_vline(
         x=0.30,
         line_dash="dot",
@@ -1371,13 +1389,13 @@ def _render_evaluation(report):
         annotation_text="0.350",
         annotation_position="top right",
     )
-    fig.update_layout(title="Metricas vs umbral", xaxis_title="Umbral", yaxis_title="Valor", xaxis_range=[0.05, 0.95])
+    fig.update_layout(title="Métricas vs umbral", xaxis_title="Umbral", yaxis_title="Valor", xaxis_range=[0.05, 0.95])
     _plotly_layout(fig, 420)
-    st.plotly_chart(fig, use_container_width=True, key="eval_threshold")
+    st.plotly_chart(fig, width="stretch", key="eval_threshold")
     _chart_explainer(
-        "El grÃ¡fico muestra cÃ³mo cambian las mÃ©tricas principales al mover el umbral de decisiÃ³n. La lÃ­nea dorada es el umbral activo, y la gris es el default (0.5).",
-        "Se ve claramente que bajar el umbral de 0.5 a 0.325 aumenta mucho el Recall (lÃ­nea verde) con una caÃ­da controlada de la PrecisiÃ³n (lÃ­nea morada). El F1-Score (naranja), que balancea ambas, alcanza su pico cerca de este umbral.",
-        "El modelo V1 operaba con el umbral de 0.5 por defecto. El anÃ¡lisis de V2 demostrÃ³ que un umbral mÃ¡s bajo estaba mejor alineado con el objetivo de negocio de maximizar la captura de leads calientes."
+        "El gráfico muestra cómo cambian las métricas principales al mover el umbral de decisión. La línea dorada es el umbral activo, y la gris es el default (0.5).",
+        "Se ve claramente que bajar el umbral de 0.5 a 0.325 aumenta mucho el Recall (línea verde) con una caída controlada de la Precisión (línea morada). El F1-Score (naranja), que balancea ambas, alcanza su pico cerca de este umbral.",
+        "El modelo V1 operaba con el umbral de 0.5 por defecto. El análisis de V2 demostró que un umbral más bajo estaba mejor alineado con el objetivo de negocio de maximizar la captura de leads calientes."
     )
 
     comp = report["threshold_comparison"]
@@ -1392,17 +1410,17 @@ def _render_evaluation(report):
     comparison_df = pd.DataFrame(comparison_rows)
     for metric_name in ["Accuracy", "Precision", "Recall", "F1"]:
         comparison_df[metric_name] = comparison_df[metric_name].map(lambda value: f"{value:.1%}")
-    st.dataframe(comparison_df[["Umbral", "Accuracy", "Precision", "Recall", "F1", "Estrategia"]], use_container_width=True, hide_index=True)
+    st.dataframe(comparison_df[["Umbral", "Accuracy", "Precision", "Recall", "F1", "Estrategia"]], width="stretch", hide_index=True)
     st.markdown(
         f"Frente a `0.500`, el umbral activo recupera **{comp['delta_hot_vs_050']} Hot Leads** adicionales "
         f"y agrega **{comp['delta_cold_vs_050']} Cold Leads** como falsos positivos."
     )
     st.info(
-        "La tabla se enfoca en los umbrales de decision operativos (0.300, 0.325 y 0.350) "
-        "frente al baseline de 0.500 para facilitar comparacion de negocio."
+        "La tabla se enfoca en los umbrales de decisión operativos (0.300, 0.325 y 0.350) "
+        "frente al baseline de 0.500 para facilitar comparación de negocio."
     )
 
-    st.subheader("5.5 Distribucion de errores")
+    st.subheader("5.5 Distribución de errores")
     st.caption(
         "No todos los errores son iguales. Estos histogramas muestran si el modelo se equivoca cerca del umbral "
         "o si hay casos realmente confusos."
@@ -1415,23 +1433,23 @@ def _render_evaluation(report):
         fig.add_vline(x=threshold, line_dash="dashdot", line_color=GOLD)
         fig.update_layout(title=f"Falsos Positivos (n={len(fp_probas)})", xaxis_title="Probabilidad predicha")
         _plotly_layout(fig, 320)
-        st.plotly_chart(fig, use_container_width=True, key="eval_fp_hist")
+        st.plotly_chart(fig, width="stretch", key="eval_fp_hist")
     with col2:
         fig = go.Figure(go.Histogram(x=fn_probas, nbinsx=20, marker_color="#FFA15A", opacity=0.8))
         fig.add_vline(x=threshold, line_dash="dashdot", line_color=GOLD)
         fig.update_layout(title=f"Falsos Negativos (n={len(fn_probas)})", xaxis_title="Probabilidad predicha")
         _plotly_layout(fig, 320)
-        st.plotly_chart(fig, use_container_width=True, key="eval_fn_hist")
+        st.plotly_chart(fig, width="stretch", key="eval_fn_hist")
     _chart_explainer(
-        "Los histogramas muestran la distribuciÃ³n de probabilidades para los errores del modelo. Falsos Positivos (izquierda) son leads 'Cold' que el modelo predijo como 'Hot'. Falsos Negativos (derecha) son 'Hot' que el modelo predijo como 'Cold'.",
-        f"La mayorÃ­a de los errores (tanto FP como FN) se concentran cerca del umbral de decisiÃ³n. Esto es positivo: significa que el modelo duda en los casos mÃ¡s ambiguos, en lugar de cometer errores groseros con alta confianza. La probabilidad media de los FP es {_safe_mean(fp_probas):.3f} y de los FN es {_safe_mean(fn_probas):.3f}.",
-        "El modelo V2 tiene una distribuciÃ³n de errores mÃ¡s concentrada alrededor del umbral, indicando una mejor 'calibraciÃ³n' de sus probabilidades en comparaciÃ³n con V1."
+        "Los histogramas muestran la distribución de probabilidades para los errores del modelo. Falsos Positivos (izquierda) son leads 'Cold' que el modelo predijo como 'Hot'. Falsos Negativos (derecha) son 'Hot' que el modelo predijo como 'Cold'.",
+        f"La mayoría de los errores (tanto FP como FN) se concentran cerca del umbral de decisión. Esto es positivo: significa que el modelo duda en los casos más ambiguos, en lugar de cometer errores groseros con alta confianza. La probabilidad media de los FP es {_safe_mean(fp_probas):.3f} y de los FN es {_safe_mean(fn_probas):.3f}.",
+        "El modelo V2 tiene una distribución de errores más concentrada alrededor del umbral, indicando una mejor 'calibración' de sus probabilidades en comparación con V1."
     )
 
     st.subheader("5.6 Interpretabilidad - SHAP")
     st.caption(
-        "SHAP sirve para responder una pregunta muy humana: por que el modelo penso que este lead valia la pena. "
-        "No solo importa si acierta, tambien importa poder explicarlo."
+        "SHAP sirve para responder una pregunta muy humana: por qué el modelo pensó que este lead valía la pena. "
+        "No solo importa si acierta, también importa poder explicarlo."
     )
     try:
         import shap
@@ -1448,9 +1466,9 @@ def _render_evaluation(report):
         plt.close()
         with col_shap1:
             _chart_explainer(
-            "Este grÃ¡fico de barras muestra el impacto promedio absoluto de cada feature en la predicciÃ³n. Las features mÃ¡s arriba son las que mÃ¡s mueven la aguja del modelo, sea para bien o para mal.",
-            "Permite confirmar a alto nivel quÃ© variables son las mÃ¡s influyentes en el modelo.",
-            "En V2, las features son mÃ¡s limpias y representativas del negocio real, a diferencia de V1 donde el leakage podÃ­a dominar."
+            "Este gráfico de barras muestra el impacto promedio absoluto de cada feature en la predicción. Las features más arriba son las que más mueven la aguja del modelo, sea para bien o para mal.",
+            "Permite confirmar a alto nivel qué variables son las más influyentes en el modelo.",
+            "En V2, las features son más limpias y representativas del negocio real, a diferencia de V1 donde el leakage podía dominar."
         )
 
         fig, _ = plt.subplots(figsize=(7, 5))
@@ -1460,22 +1478,22 @@ def _render_evaluation(report):
         with col_shap2:
             _chart_explainer(
             "Cada punto es un lead. El color indica el valor de la feature (rojo=alto, azul=bajo). El eje X muestra el impacto SHAP: valores positivos empujan hacia 'Hot', negativos hacia 'Cold'.",
-            "Permite ver no solo QUÃ‰ features son importantes, sino CÃ“MO impactan. Por ejemplo, se puede observar si valores altos de una feature (puntos rojos) tienden a tener un impacto positivo (a la derecha).",
-            "Este tipo de anÃ¡lisis detallado no se realizÃ³ en V1, y es clave en V2 para entender el comportamiento del modelo a nivel de lead individual."
+            "Permite ver no solo QUÉ features son importantes, sino CÓMO impactan. Por ejemplo, se puede observar si valores altos de una feature (puntos rojos) tienden a tener un impacto positivo (a la derecha).",
+            "Este tipo de análisis detallado no se realizó en V1, y es clave en V2 para entender el comportamiento del modelo a nivel de lead individual."
         )
         plt.close()
 
         top_features_names = list(report["feature_importances"].head(5).index) if not report["feature_importances"].empty else []
-        top_features_readable = ", ".join([f"`{name}`" for name in top_features_names[:5]]) if top_features_names else "las features lideres del modelo"
+        top_features_readable = ", ".join([f"`{name}`" for name in top_features_names[:5]]) if top_features_names else "las features líderes del modelo"
         month_note = (
-            "En esta corrida, `mes_creacion` muestra patron: valores bajos suelen empujar hacia Hot y valores altos hacia Cold."
+            "En esta corrida, `mes_creacion` muestra patrón: valores bajos suelen empujar hacia Hot y valores altos hacia Cold."
             if "mes_creacion" in report["X_test"].columns
-            else "No se detecto `mes_creacion` en la matriz final de esta corrida."
+            else "No se detectó `mes_creacion` en la matriz final de esta corrida."
         )
         st.markdown("**Hallazgos SHAP (lectura de negocio):**")
         st.markdown(
             f"- Las features top en SHAP son consistentes con la importancia Gini (ejemplo: {top_features_readable}).\n"
-            "- Variables de origen/formulario/vehiculo capturan calidad e intencion del lead; variables temporales capturan contexto operativo.\n"
+            "- Variables de origen/formulario/vehículo capturan calidad e intención del lead; variables temporales capturan contexto operativo.\n"
             f"- {month_note}"
         )
 
@@ -1515,10 +1533,10 @@ def _render_evaluation(report):
             "\n".join(
                 [
                     "### Lo bueno",
-                    "- El modelo ayuda a ordenar mejor los leads para que ventas empiece por los mas prometedores.",
+                    "- El modelo ayuda a ordenar mejor los leads para que ventas empiece por los más prometedores.",
                     f"- Con el umbral actual recupera **{metrics['Recall']:.1%}** de los Hot Leads reales.",
                     "- El criterio es consistente en toda la app: sidebar, reporte e inferencia usan el mismo umbral.",
-                    "- Las cifras que ves aca salen del modelo y del dataset actual, no de textos historicos fijos.",
+                    "- Las cifras que ves acá salen del modelo y del dataset actual, no de textos históricos fijos.",
                 ]
             )
         )
@@ -1527,9 +1545,9 @@ def _render_evaluation(report):
             "\n".join(
                 [
                     "### Lo que hay que mirar de cerca",
-                    f"- Todavia se cuelan algunos leads frios: **{fp / total:.1%}** del test.",
-                    f"- Tambien se pierden algunas oportunidades reales: **{fn / total:.1%}** del test.",
-                    "- El reporte hoy explica muy bien el modelo activo, pero no tiene un benchmark historico guardado para comparar versiones automaticamente.",
+                    f"- Todavía se cuelan algunos leads fríos: **{fp / total:.1%}** del test.",
+                    f"- También se pierden algunas oportunidades reales: **{fn / total:.1%}** del test.",
+                    "- El reporte hoy explica muy bien el modelo activo, pero no tiene un benchmark histórico guardado para comparar versiones automáticamente.",
                 ]
             )
         )
@@ -1538,9 +1556,10 @@ def _render_evaluation(report):
         "\n".join(
             [
                 "### En palabras simples",
-                "1. El umbral `0.325` es una forma razonable de priorizar mas oportunidades sin desbordar al equipo comercial.",
-                "2. Si ventas puede revisar mas leads, este enfoque tiene sentido; si el costo operativo sube mucho, conviene endurecer el corte.",
-                "3. Lo importante no es perseguir una metrica perfecta, sino elegir el tipo de error que el negocio esta dispuesto a tolerar.",
+                "1. El umbral `0.325` es una forma razonable de priorizar más oportunidades sin desbordar al equipo comercial.",
+                "2. Si ventas puede revisar más leads, este enfoque tiene sentido; si el costo operativo sube mucho, conviene endurecer el corte.",
+                "3. Lo importante no es perseguir una métrica perfecta, sino elegir el tipo de error que el negocio está dispuesto a tolerar.",
             ]
         )
     )
+

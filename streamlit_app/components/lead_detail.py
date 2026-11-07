@@ -1,4 +1,4 @@
-"""Componente de detalle individual con explicación SHAP."""
+﻿"""Componente de detalle individual con explicación SHAP."""
 
 import streamlit as st
 import pandas as pd
@@ -13,7 +13,10 @@ def render_lead_selector(all_results, filtered_results):
         tuple(DataFrame, int): (display_df, positional_index) — el DataFrame de origen
         y el índice posicional dentro de él.
     """
-    st.markdown("### 🔍 Detalle de un lead")
+    st.markdown(
+        '<div class="section-header"><h3>🔍 Detalle de un lead</h3></div>',
+        unsafe_allow_html=True,
+    )
     st.caption("Busca por ID (busca en **todos** los leads) o selecciona de la lista filtrada.")
 
     has_lead_id = "lead_id" in all_results.columns
@@ -80,17 +83,12 @@ def render_lead_selector(all_results, filtered_results):
 def render_lead_detail(results, explanation_df, base_value, predicted_proba, row_idx):
     """Renderiza el detalle de un lead con explicación SHAP."""
     row = results.iloc[row_idx]
-
-    # Info del lead
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        pred = row["prediccion"]
-        st.markdown(f"**Predicción:** {pred}")
-    with col2:
-        st.markdown(f"**Probabilidad:** {row['probabilidad_hot']}%")
-    with col3:
-        if "real" in row.index and pd.notna(row.get("real")):
-            st.markdown(f"**Real:** {row['real']}")
+    pred = row["prediccion"]
+    prob = row["probabilidad_hot"]
+    is_hot = "Hot" in str(pred)
+    card_class = "lead-card" if is_hot else "lead-card cold"
+    badge_class = "badge-hot" if is_hot else "badge-cold"
+    lead_id_txt = f"Lead: {row['lead_id']}" if "lead_id" in row.index and pd.notna(row.get("lead_id")) else "Lead seleccionado"
 
     # Contexto del lead
     context_cols = {
@@ -99,27 +97,45 @@ def render_lead_detail(results, explanation_df, base_value, predicted_proba, row
         "campana": "Campaña",
         "nombre_formulario": "Formulario",
         "origen": "Canal",
-        "origen_creacion": "Origen creación",
+        "origen_creacion": "Origen",
     }
-    context_data = {}
+    context_items = []
     for col, label in context_cols.items():
         if col in row.index and pd.notna(row.get(col)):
-            context_data[label] = row[col]
+            context_items.append((label, row[col]))
 
-    if context_data:
-        st.markdown("**Datos del lead:**")
-        cols = st.columns(min(len(context_data), 3))
-        for i, (label, value) in enumerate(context_data.items()):
-            with cols[i % len(cols)]:
-                st.markdown(f"- **{label}:** {value}")
+    # Real label if available
+    real_html = ""
+    if "real" in row.index and pd.notna(row.get("real")):
+        real_badge = "badge-hot" if "Hot" in str(row["real"]) else "badge-cold"
+        real_html = f'<span style="margin-left:10px;font-size:0.8rem;opacity:0.8">Real: <span class="{real_badge}" style="font-size:0.76rem;padding:2px 10px">{row["real"]}</span></span>'
 
-    st.divider()
+    info_items_html = "".join(
+        f'<div class="lead-info-item">'
+        f'<span class="lead-info-label">{lbl}</span>'
+        f'<span class="lead-info-value">{val}</span>'
+        f'</div>'
+        for lbl, val in context_items
+    )
+
+    st.markdown(
+        f'<div class="{card_class}">'
+        f'<p class="lead-card-title">'
+        f'{lead_id_txt} &nbsp; <span class="{badge_class}">{pred}</span> &nbsp;'
+        f'<span style="font-size:1rem;font-weight:700">{prob}%</span>'
+        f'{real_html}'
+        f'</p>'
+        f'<div class="lead-info-row">{info_items_html}</div>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
 
     # Explicación SHAP
-    st.markdown("#### ¿Por qué esta clasificación?")
-    st.caption(
-        "Cada barra muestra cuánto influyó una característica en la predicción. "
-        "Las barras rojas empujan hacia Hot, las azules hacia Cold."
+    st.markdown(
+        "<strong>🧠 ¿Por qué esta clasificación?</strong><br>"
+        "<span style='font-size:0.85rem;opacity:0.7'>Cada barra muestra cuánto influyó una característica. "
+        "🔴 empuja hacia Hot  |  🔵 empuja hacia Cold.</span>",
+        unsafe_allow_html=True,
     )
 
     render_shap_chart(explanation_df)
@@ -135,7 +151,7 @@ def render_lead_detail(results, explanation_df, base_value, predicted_proba, row
                     "direccion": "Dirección",
                 }
             ),
-            use_container_width=True,
+            width="stretch",
             hide_index=True,
         )
 
@@ -227,4 +243,5 @@ def render_shap_chart(explanation_df):
     html += "</div>"
 
     st.markdown(html, unsafe_allow_html=True)
+
 

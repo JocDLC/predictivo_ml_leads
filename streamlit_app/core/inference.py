@@ -1,9 +1,10 @@
-"""
+﻿"""
 Pipeline de inferencia programático.
 Reutiliza la lógica de src/predict.py adaptada para Streamlit.
 """
 
 import os
+import unicodedata
 
 import joblib
 import numpy as np
@@ -18,10 +19,10 @@ LEGACY_UMBRAL = 0.35
 DIAS_SEMANA_EN_ES = {
     "Monday": "lunes",
     "Tuesday": "martes",
-    "Wednesday": "miércoles",
+    "Wednesday": "miercoles",
     "Thursday": "jueves",
     "Friday": "viernes",
-    "Saturday": "sábado",
+    "Saturday": "sabado",
     "Sunday": "domingo",
 }
 
@@ -43,11 +44,17 @@ def clasificar_franja(hora):
     return "noche"
 
 
+def _strip_accents(text):
+    """Normaliza texto removiendo acentos para comparaciones robustas."""
+    nfkd = unicodedata.normalize("NFKD", text)
+    return "".join(c for c in nfkd if not unicodedata.combining(c)).lower()
+
+
 def find_column(columns, keywords, exclude_keywords=None):
     for col in columns:
-        col_lower = col.lower()
-        if all(kw.lower() in col_lower for kw in keywords):
-            if exclude_keywords and any(ek.lower() in col_lower for ek in exclude_keywords):
+        col_norm = _strip_accents(col)
+        if all(_strip_accents(kw) in col_norm for kw in keywords):
+            if exclude_keywords and any(_strip_accents(ek) in col_norm for ek in exclude_keywords):
                 continue
             return col
     return None
@@ -85,16 +92,18 @@ def get_expected_features(model, artifacts):
 
 
 def extract_date_features(df):
-    date_col = find_column(
-        df.columns,
-        keywords=["fecha", "creación"],
-        exclude_keywords=["cliente", "reasign"],
-    )
+    # Prioridad 1: "Fecha de creacion por el cliente" (tiene hora real)
+    date_col = find_column(df.columns, keywords=["fecha", "creacion", "cliente"])
+    # Prioridad 2: "Fecha de creacion" (sin "reasignacion")
     if date_col is None:
-        date_col = find_column(df.columns, keywords=["fecha", "creacion"])
+        date_col = find_column(
+            df.columns,
+            keywords=["fecha", "creacion"],
+            exclude_keywords=["reasign"],
+        )
     if date_col is None:
         raise ValueError(
-            f"No se encontró columna 'Fecha de creación'. "
+            f"No se encontro columna de fecha de creacion. "
             f"Columnas disponibles: {list(df.columns)}"
         )
 
@@ -112,14 +121,10 @@ def select_columns(df):
     col_map = {}
     mappings = [
         (["nombre", "formulario"], [], "nombre_formulario"),
-        (["campaña"], [], "campana"),
-        (["origen", "creación"], [], "origen_creacion"),
+        (["campana"], [], "campana"),
         (["origen", "creacion"], [], "origen_creacion"),
-        (["vehículo", "interés"], [], "vehiculo_interes"),
         (["vehiculo", "interes"], [], "vehiculo_interes"),
-        (["nombre corto", "concesión"], [], "concesionario"),
         (["nombre corto", "concesion"], [], "concesionario"),
-        (["cualificación"], [], "cualificacion"),
         (["cualificacion"], [], "cualificacion"),
         (["lead id"], [], "lead_id"),
     ]
@@ -130,8 +135,9 @@ def select_columns(df):
             if found:
                 col_map[found] = target_name
 
+    # "Origen" standalone (sin "creacion" en el nombre)
     for c in df.columns:
-        if c.strip().lower() == "origen" and c not in col_map:
+        if _strip_accents(c.strip()) == "origen" and c not in col_map:
             col_map[c] = "origen"
             break
 
@@ -140,14 +146,18 @@ def select_columns(df):
     needed = [
         "mes_creacion", "dia_creacion", "hora_creacion", "dia_semana_creacion",
         "nombre_formulario", "campana", "origen_creacion",
-        "vehiculo_interes", "concesionario", "origen",
+        "vehiculo_interes", "concesionario",
     ]
     missing = [c for c in needed if c not in df.columns]
     if missing:
         raise ValueError(f"Columnas requeridas no encontradas: {missing}")
 
+    # 'origen' es semi-opcional: si no existe se rellena con default
+    if "origen" not in df.columns:
+        df["origen"] = "desconocido"
+
     optional = ["lead_id", "cualificacion"]
-    keep = needed + [c for c in optional if c in df.columns]
+    keep = needed + ["origen"] + [c for c in optional if c in df.columns]
     return df[keep].copy()
 
 
@@ -194,7 +204,7 @@ def apply_feature_engineering(df, artifacts, expected_features):
     df_model = pd.DataFrame(index=df.index)
 
     df["es_fin_de_semana"] = df["dia_semana_creacion"].isin(
-        ["sábado", "domingo"]
+        ["sabado", "domingo"]
     ).astype(int)
     df["franja_horaria"] = df["hora_creacion"].apply(clasificar_franja)
 
@@ -251,12 +261,50 @@ def apply_feature_engineering(df, artifacts, expected_features):
     return df_model
 
 
+def _read_uploaded_file(uploaded_file):
+    """Lee el archivo subido detectando formato por extensión (.xlsx, .xls, .csv)."""
+    filename = getattr(uploaded_file, "name", "").lower()
+    if filename.endswith(".csv"):
+        # Intentar separadores comunes: coma, punto y coma, tab
+        uploaded_file.seek(0)
+        try:
+            df = pd.read_csv(uploaded_file, sep=";", encoding="utf-8")
+        except Exception:
+            uploaded_file.seek(0)
+            df = pd.read_csv(uploaded_file, sep=";", encoding="latin-1")
+        # Si solo hay 1 columna, probablemente el separador no era ';'
+        if len(df.columns) <= 1:
+            uploaded_file.seek(0)
+            try:
+                df = pd.read_csv(uploaded_file, sep=",", encoding="utf-8")
+            except Exception:
+                uploaded_file.seek(0)
+                df = pd.read_csv(uploaded_file, sep=",", encoding="latin-1")
+        return df
+
+    if filename.endswith(".xlsx"):
+        engine = "openpyxl"
+    elif filename.endswith(".xls"):
+        engine = "xlrd"
+    else:
+        # Fallback para archivos Excel sin extensión clara
+        engine = "openpyxl"
+
+    uploaded_file.seek(0)
+    try:
+        return pd.read_excel(uploaded_file, engine=engine)
+    except ImportError as exc:
+        raise ValueError(
+            f"No se pudo leer '{filename}'. Falta la dependencia para engine='{engine}'. "
+            f"Instala el paquete requerido y vuelve a intentar."
+        ) from exc
+
 def run_inference(uploaded_file, umbral=None):
     """
-    Pipeline completo: archivo Excel → DataFrame con predicciones.
+    Pipeline completo: archivo (Excel/CSV) → DataFrame con predicciones.
 
     Args:
-        uploaded_file: Archivo Excel subido por el usuario.
+        uploaded_file: Archivo (.xlsx, .xls, .csv) subido por el usuario.
         umbral: Umbral de decisión (default: usa el guardado en artifacts).
 
     Retorna:
@@ -269,7 +317,7 @@ def run_inference(uploaded_file, umbral=None):
     if umbral is None:
         umbral = resolve_umbral(artifacts)
 
-    df = pd.read_excel(uploaded_file)
+    df = _read_uploaded_file(uploaded_file)
     df.columns = [fix_encoding(c) for c in df.columns]
     total_raw = len(df)
 
@@ -282,12 +330,16 @@ def run_inference(uploaded_file, umbral=None):
     n_bot = 0
     if "cualificacion" in df.columns:
         mask_bot = df["cualificacion"].isna()
-        n_bot = mask_bot.sum()
-        if n_bot > 0:
+        n_bot = int(mask_bot.sum())
+        # Solo filtrar si hay ALGUNOS cualificados (archivo mixto/retrospectivo)
+        # Si TODOS son NaN => archivo de leads nuevos, no filtrar
+        has_qualified = (~mask_bot).any()
+        if n_bot > 0 and has_qualified:
             df = df[~mask_bot].copy()
             if lead_ids is not None:
                 lead_ids = lead_ids[~mask_bot].copy()
-        y_real = (df["cualificacion"] == "Contacto interesado").astype(int)
+        if has_qualified:
+            y_real = (df["cualificacion"] == "Contacto interesado").astype(int)
         df = df.drop(columns=["cualificacion"])
 
     # Guardar datos originales para mostrar en grilla
@@ -300,7 +352,7 @@ def run_inference(uploaded_file, umbral=None):
     y_pred = (y_proba >= umbral).astype(int)
 
     results = pd.DataFrame({
-        "prediccion": np.where(y_pred == 1, "Hot 🔥", "Cold ❄️"),
+        "prediccion": np.where(y_pred == 1, "Hot \U0001f525", "Cold \u2744\ufe0f"),
         "probabilidad_hot": np.round(y_proba * 100, 1),
     })
 
@@ -314,19 +366,19 @@ def run_inference(uploaded_file, umbral=None):
             results[col] = df_display[col].values[:len(results)]
 
     if y_real is not None and len(y_real) == len(y_pred):
-        results["real"] = np.where(y_real.values == 1, "Hot 🔥", "Cold ❄️")
-        accuracy = (y_pred == y_real.values).mean() * 100
+        results["real"] = np.where(y_real.values == 1, "Hot \U0001f525", "Cold \u2744\ufe0f")
+        accuracy = float((y_pred == y_real.values).mean() * 100)
     else:
         accuracy = None
 
     stats = {
-        "total_raw": total_raw,
-        "n_bot": n_bot,
+        "total_raw": int(total_raw),
+        "n_bot": int(n_bot),
         "total_evaluados": len(results),
         "n_hot": int(y_pred.sum()),
         "n_cold": int(len(y_pred) - y_pred.sum()),
         "accuracy": accuracy,
-        "umbral": umbral,
+        "umbral": float(umbral),
     }
 
     return results, df_model, stats

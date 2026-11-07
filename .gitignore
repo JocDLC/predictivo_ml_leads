@@ -81,3 +81,9 @@ Thumbs.db
 
 # Backups
 *.bak
+
+# Residuos locales
+nul
+streamlit*.log
+# Modelos dentro de notebooks (binarios regenerables, duplican models/)
+notebooks/models/

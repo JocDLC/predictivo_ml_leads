@@ -41,3 +41,21 @@
 - `nombre_formulario` y `campana` son redundantes para formularios MX_Renault (relación 1:1).
 - Meses excluidos del dataset: Abril, Mayo, Junio 2025 (anómalos).
 - Leads del chatbot eliminados (plataforma CHATBOT).
+- BD 2026: el target `Cualificación` NO es confiable fuera de la plataforma MX_LEAD_QUALIF (ver `docs/CASO_BD_MX_2026_LIMPIEZA.md`). No reentrenar sobre la BD completa.
+
+## Documentos de análisis (leer solo si el tema lo requiere)
+- `docs/CASO_BD_MX_2026_LIMPIEZA.md` — hallazgos de la BD 2026, dudas Q1–Q12 para MX, plan de limpieza v3.
+- `docs/ANALISIS_ESTRATEGICO_2026-10.md` — revisión del proyecto, bugs B1–B9, arquitectura unificada, API Salesforce, reentrenamiento automatizado.
+- `docs/MAPA_ORIGEN_CAMPANAS_2026.md` — jerarquía Origen(UTM) → Origen de creación(canal) → Formulario; origen de los formularios ~100% Hot y evidencia de que MX_LEAD_CHATBOT_QUALIF auto-cualifica.
+- `docs/CONTRASTE_REUNION_MX_2026-11-05.md` — respuestas de MX a Q1–Q12, correcciones a la presentación, ventana R-Solve de 6 meses (impacta el split), 3 KPIs Sales on Leads.
+
+## Tracker Gantt
+Este proyecto está traqueado en el tablero Gantt del usuario
+(`C:\Users\ax24611\Downloads\_dev\Grantt`). Al empezar/terminar trabajo
+traqueable, reportar con:
+`node C:\Users\ax24611\Downloads\_dev\Grantt\scripts\update-tracker.mjs <cmd>`
+Comandos: `list` | `start <id>` | `stop <id> --progress N` | `status <id> <estado>` |
+`blocker <id> "motivo"` | `unblock <id>` | `release mx-model "vX.Y — nombre"` | `log <id> "avance"`
+- Este repo corresponde al proyecto `mx-model` del tracker.
+- `release` ≠ `marker`: versiones del modelo/app van con `release`; `marker` solo para stoppers externos.
+- `--push` solo si el usuario lo pide. Ver skill `gantt-tracker`.
