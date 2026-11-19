@@ -1,0 +1,16 @@
+# Dependencias minimas para Streamlit Community Cloud.
+# Community Cloud busca primero el requirements junto al entrypoint,
+# por lo que este archivo aplica al deploy (el de la raiz es para training).
+
+streamlit>=1.40
+pandas>=2.2
+numpy>=2.0
+# Pinned: models/*.joblib fueron serializados con sklearn 1.8.0
+scikit-learn==1.8.0
+shap>=0.45
+# Requerido para deserializar los TargetEncoder de preprocessing_config.joblib
+category-encoders>=2.7
+matplotlib>=3.9
+plotly>=5.20
+openpyxl>=3.1
+joblib>=1.4
