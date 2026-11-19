@@ -1,0 +1,86 @@
+{
+  "profiles": {
+    "base": [
+      ".agents/rules/harness.md",
+      ".agents/workflows/harness.md",
+      ".claude/CLAUDE.md",
+      ".cursor/rules/harness.md",
+      ".editorconfig",
+      ".gitattributes",
+      {"source": ".harness/templates/consumer-ci.yml", "target": ".github/workflows/ci.yml"},
+      ".harness/templates/consumer-ci.yml",
+      ".gitignore",
+      ".windsurf/rules/harness.md",
+      ".windsurf/workflows/verificar-harness.md",
+      "AGENTS.md",
+      "docs/workflows/sdd.md",
+      "docs/workflows/odd.md",
+      "MEMORY.md",
+      "PSScriptAnalyzerSettings.psd1",
+      "README.md",
+      "TROUBLESHOOTING.md",
+      "VERSIONS.md",
+      "scripts/bootstrap.ps1",
+      "scripts/bootstrap.sh",
+      "scripts/build.ps1",
+      "scripts/build.sh",
+      "scripts/common.ps1",
+      "scripts/common.sh",
+      "scripts/context.ps1",
+      "scripts/versions.ps1",
+      "scripts/probe.py",
+      "scripts/manifest.py",
+      "scripts/format.ps1",
+      "scripts/format.sh",
+      "scripts/install.ps1",
+      "scripts/install.sh",
+      "scripts/lint.ps1",
+      "scripts/lint.sh",
+      "scripts/profiles-manifest.json",
+      "scripts/setup-project.ps1",
+      "scripts/setup-project.sh",
+      "scripts/test.ps1",
+      "scripts/test.sh",
+      "scripts/verify-setup.ps1",
+      "scripts/verify-setup.sh",
+      "tests/harness/smoke.ps1",
+      "tests/harness/smoke.sh"
+    ],
+    "codex": [
+      ".codex/AGENTS.md",
+      ".codex/hooks.json"
+    ],
+    "openspec": [
+      ".harness/templates/consumer-harness.spec.md",
+      {"source": ".harness/templates/consumer-harness.spec.md", "target": "openspec/specs/consumer-harness/spec.md"},
+      ".devin/skills/openspec-apply-change/SKILL.md",
+      ".devin/skills/openspec-archive-change/SKILL.md",
+      ".devin/skills/openspec-explore/SKILL.md",
+      ".devin/skills/openspec-propose/SKILL.md",
+      ".devin/workflows/opsx-apply.md",
+      ".devin/workflows/opsx-archive.md",
+      ".devin/workflows/opsx-explore.md",
+      ".devin/workflows/opsx-propose.md",
+      ".windsurf/workflows/nuevo-cambio.md",
+      ".windsurf/workflows/opsx-apply.md",
+      ".windsurf/workflows/opsx-archive.md",
+      ".windsurf/workflows/opsx-explore.md",
+      ".windsurf/workflows/opsx-propose.md",
+      "openspec/config.yaml",
+      "openspec/specs/harness-engineering.md"
+    ],
+    "graphify": [
+      ".agents/rules/graphify.md",
+      ".agents/workflows/graphify.md",
+      ".graphifyignore"
+    ],
+    "archify": [
+      ".agents/rules/archify.md",
+      "docs/architecture/README.md"
+    ],
+    "ml-timeseries": [
+      ".agents/rules/ml-timeseries.md",
+      "docs/profiles/ml-timeseries.md"
+    ]
+  }
+}

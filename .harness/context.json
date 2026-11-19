@@ -1,0 +1,11 @@
+{
+    "schema_version":  1,
+    "role":  "consumer",
+    "profiles":  [
+                     "base",
+                     "openspec",
+                     "graphify",
+                     "ml-timeseries"
+                 ],
+    "github_mode":  "skip"
+}

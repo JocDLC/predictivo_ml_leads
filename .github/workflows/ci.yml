@@ -1,0 +1,62 @@
+name: Consumer Harness CI
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install check tools for active profiles
+        shell: powershell
+        run: |
+          . ./scripts/common.ps1
+          $context = Get-HarnessContext
+          Install-Module PSScriptAnalyzer -RequiredVersion (Get-HarnessVersion PSScriptAnalyzer) -Scope CurrentUser -Force
+          if ($context.profiles -contains 'openspec') {
+            npm install -g "@fission-ai/openspec@$(Get-HarnessVersion '@fission-ai/openspec')"
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+      - name: Test consumer
+        shell: powershell
+        run: ./scripts/test.ps1
+      - name: Lint consumer
+        shell: powershell
+        run: ./scripts/lint.ps1
+      - name: Build consumer
+        shell: powershell
+        run: ./scripts/build.ps1
+      - name: Unit tests del producto (fixtures sinteticas)
+        run: python scripts/harness.py unit
+  ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install check tools for active profiles
+        shell: bash
+        run: |
+          set -euo pipefail
+          source scripts/common.sh
+          sc="$(harness_version ShellCheck)"
+          sf="$(harness_version shfmt)"
+          curl -fsSL "https://github.com/koalaman/shellcheck/releases/download/v$sc/shellcheck-v$sc.linux.x86_64.tar.xz" | tar -xJ -C "$RUNNER_TEMP"
+          sudo install -m 0755 "$RUNNER_TEMP/shellcheck-v$sc/shellcheck" /usr/local/bin/shellcheck
+          curl -fsSL "https://github.com/mvdan/sh/releases/download/v$sf/shfmt_v${sf}_linux_amd64" -o "$RUNNER_TEMP/shfmt"
+          sudo install -m 0755 "$RUNNER_TEMP/shfmt" /usr/local/bin/shfmt
+          selected="$(manifest_command selected scripts/profiles-manifest.json '' "$PWD")"
+          if grep -qx openspec <<<"$selected"; then
+            npm install -g "@fission-ai/openspec@$(harness_version @fission-ai/openspec)"
+          fi
+      - name: Test, lint and build consumer
+        run: |
+          bash scripts/test.sh
+          bash scripts/lint.sh
+          bash scripts/build.sh
+      - name: Unit tests del producto (fixtures sinteticas)
+        run: python scripts/harness.py unit

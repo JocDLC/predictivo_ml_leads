@@ -139,4 +139,21 @@ Acceder en: **http://localhost:8501**
 
 ---
 
+## Desarrollo (harness)
+
+Este repo adopta el harness de `dev-harness-template` (perfiles: `base, openspec, graphify, ml-timeseries`; ver `.harness/context.json`). La política de desarrollo — rutas **TDD / ODD / SDD** por riesgo — está en `AGENTS.md`.
+
+| Comando | Qué hace |
+|---|---|
+| `python scripts/harness.py unit` | Suite unitaria (fixtures sintéticas, sin datos reales) |
+| `python scripts/harness.py lint` | Ruff sobre `tests/` y `scripts/harness.py` |
+| `python scripts/harness.py tdd-red / tdd-green <test_id>` | Ciclo TDD de la vía rápida (ver `.devin/skills/tdd/`) |
+| `./scripts/test.ps1` | Tests del harness consumidor |
+| `./scripts/lint.ps1` | Lint + escáner determinístico de secretos |
+| `./scripts/build.ps1` | Sintaxis + `openspec validate` |
+| `./scripts/verify-setup.ps1` | Doctor del entorno |
+| `python scripts/run_tests.py` | Smoke del producto con datos reales (local, no CI) |
+
+---
+
 **Proyecto Final — Curso de Machine Learning e IA — v2.2 (Mayo 2026)**

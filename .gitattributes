@@ -1,0 +1,9 @@
+* text=auto
+*.sh text eol=lf
+*.bats text eol=lf
+*.ps1 text eol=crlf
+*.psm1 text eol=crlf
+*.psd1 text eol=crlf
+*.workflow.html -text
+*.workflow.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+

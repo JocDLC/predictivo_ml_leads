@@ -33,7 +33,7 @@ data/memory/*.db
 # ============================================================
 # MODELOS — binarios regenerables
 # ============================================================
-models/preprocessing_config.joblib
+# preprocessing_config.joblib SI se versiona: la app lo necesita en Streamlit Cloud
 models/trained/
 
 # ============================================================
@@ -45,7 +45,11 @@ src/api/
 src/data/
 src/features/
 src/models/
-docs/
+# docs/ contiene analisis con datos de negocio (no van al repo),
+# pero los workflows/profiles del harness si se versionan
+docs/*
+!docs/workflows/
+!docs/profiles/
 
 # ============================================================
 # ARCHIVOS TEMPORALES Y SCRIPTS DE PRUEBA
@@ -69,8 +73,7 @@ scripts/_check_doc.py
 mlruns/
 mlflow.db
 
-# Agentes locales
-.agents/
+# .agents/ queda versionado: el harness lo usa para reglas cross-IDE
 
 # Graphify converted files con PII (leads crudos convertidos a markdown)
 graphify-out/converted/Leads*

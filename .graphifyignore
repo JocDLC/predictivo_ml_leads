@@ -1,0 +1,27 @@
+# Exclusiones para Graphify (no indexar dependencias, cachés, audio ni binarios pesados)
+.git/
+node_modules/
+__pycache__/
+.venv/
+dist/
+build/
+graphify-out/
+~$*
+*.mp3
+*.wav
+*.m4a
+*.ogg
+*.flac
+*.mp4
+*.mkv
+*.xlsx
+*.xlsm
+*.onnx
+*.pt
+*.pth
+*.safetensors
+*.gguf
+*.bin
+*.env
+*.pem
+*.key

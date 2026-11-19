@@ -1,6 +1,9 @@
 # Reglas del proyecto — predictivo_ml_leads
 # Este archivo se carga automáticamente en CADA conversación de Windsurf/Cascade.
 
+# La POLÍTICA DE DESARROLLO (rutas TDD/ODD/SDD, checks, autoridad) está en AGENTS.md — leerla.
+# Este archivo es solo contexto de negocio/datos.
+
 ## Contexto rápido
 - App Streamlit de clasificación de leads (Hot/Cold) para Renault México.
 - Modelo: Random Forest local (models/best_model.joblib). Sin LLM externo, todo offline.
