@@ -306,6 +306,18 @@ def load_report_artifacts():
     }
 
 
+def try_load_report_artifacts():
+    """Devuelve el contexto del reporte o None si faltan los datasets locales.
+
+    En despliegues sin data/processed (p. ej. Streamlit Cloud) la app debe
+    seguir funcionando sin la página de reporte.
+    """
+    try:
+        return load_report_artifacts()
+    except FileNotFoundError:
+        return None
+
+
 def render_model_report():
     report = load_report_artifacts()
     df = load_clean_data()

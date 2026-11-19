@@ -21,9 +21,9 @@ st.set_page_config(
 from components.upload import render_upload
 from components.results_grid import render_stats, render_grid
 from components.lead_detail import render_lead_selector, render_lead_detail
-from components.model_report import load_report_artifacts, render_model_report
+from components.model_report import render_model_report, try_load_report_artifacts
 from components.history import render_history_page
-from core.inference import run_inference, load_model_and_artifacts
+from core.inference import run_inference, load_model_and_artifacts, resolve_umbral
 from core.shap_explainer import explain_lead
 from core.memory import init_db, save_session
 from core.theme import apply_theme
@@ -38,10 +38,10 @@ def format_model_name(model):
 
 # 4. Sidebar y Navegación
 model, artifacts = load_model_and_artifacts()
-report_context = load_report_artifacts()
+report_context = try_load_report_artifacts()
 model_name = format_model_name(model)
-umbral = report_context["umbral"]
-metrics = report_context.get("metrics_display", {})
+umbral = report_context["umbral"] if report_context else resolve_umbral(artifacts)
+metrics = report_context.get("metrics_display", {}) if report_context else {}
 
 with st.sidebar:
     logo_path = Path(__file__).resolve().parents[1] / "RENAULT images.png"
@@ -58,9 +58,12 @@ with st.sidebar:
         """,
         unsafe_allow_html=True,
     )
+    nav_options = ["🎯 Predicción de Leads", "📜 Historial"]
+    if report_context is not None:
+        nav_options.insert(1, "📊 Reporte del Modelo")
     page = st.radio(
         "Navegación",
-        ["🎯 Predicción de Leads", "📊 Reporte del Modelo", "📜 Historial"],
+        nav_options,
         label_visibility="collapsed",
     )
     st.markdown("---")

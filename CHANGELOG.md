@@ -20,6 +20,13 @@ Todas las novedades notables del proyecto se registran acá, siguiendo
 - CI de GitHub Actions que corre tests, lint y build del harness en
   Windows y Ubuntu.
 
+### Corregido
+
+- La app ya no crashea al arrancar en despliegues sin `data/processed/`
+  (p. ej. Streamlit Cloud): `try_load_report_artifacts()` devuelve
+  `None` y la navegación oculta "Reporte del Modelo". Test-regla:
+  `tests.test_model_report_units.TryLoadReportArtifactsTests`.
+
 ### Cambiado
 
 - `AGENTS.md` reescrito: política ODD/SDD + Fase 0.5 TDD + contexto del
