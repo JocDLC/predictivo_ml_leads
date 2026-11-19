@@ -21,7 +21,14 @@ env/
 # Raw data con datos personales (nombres, telefonos, correos) — NUNCA subir
 data/raw/
 # Processed CSVs (regenerables desde notebooks)
+# Excepcion: los datasets del Reporte del Modelo SI se versionan para
+# Streamlit Cloud (sin PII: encodings numericos y columnas de negocio).
 data/processed/*.csv
+!data/processed/leads_cleaned.csv
+!data/processed/X_train_v2.csv
+!data/processed/X_test_v2.csv
+!data/processed/y_train_v2.csv
+!data/processed/y_test_v2.csv
 # Base de datos SQLite de historial (local)
 data/memory/*.db
 
